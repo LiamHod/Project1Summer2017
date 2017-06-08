@@ -107,6 +107,7 @@ public class OverviewController{
         rightClickMenu.setAutoHide(true);
         downloadMenu.setOnAction(e -> downloadFile());
         copytoMenu.setOnAction(e -> copyFile());
+        shareMenu.setOnAction(e -> shareFile());
         return rightClickMenu;
     }
 
@@ -195,6 +196,27 @@ public class OverviewController{
         }
     }
 
+    public void shareFile(){
+        try{
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ShareFile.fxml"));
+            AnchorPane shareFilePage = (AnchorPane)fxmlLoader.load();
+            Stage shareStage = new Stage();
+            shareStage.setTitle("Share File");
+            shareStage.initModality(Modality.WINDOW_MODAL);
+            shareStage.initOwner(currentStage);
+            Scene shareScene = new Scene(shareFilePage);
+            ShareFileController shareFileController = fxmlLoader.getController();
+            shareFileController.initFileIdAndUserId(selFile.getDocid(),instrId,classes.getSelectionModel().getSelectedItem());
+            shareStage.setScene(shareScene);
+            shareStage.showAndWait();
+            loadData();
+            runPage();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public void setLogCont(LoginController logCont){
         this.logCont = logCont;
 
@@ -248,7 +270,11 @@ public class OverviewController{
         classes.getSelectionModel().selectedItemProperty().addListener( (v, oldvalue, newvalue) -> {
             files.getItems().clear();
             //System.out.println(newvalue);
-            queryFiles(newvalue);
+            if (newvalue == null){
+                queryFiles(oldvalue);
+            }else {
+                queryFiles(newvalue);
+            }
             files.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             //files.setItems(FXCollections.observableList(fileList));
             files.setItems(fileList);
@@ -261,10 +287,13 @@ public class OverviewController{
 
         String fileQueryStr = "SELECT document.iddocument,title,uploader FROM instructor,document,course,courdoc,instrdoc WHERE " +
                 "instructor.idinstructor = instrdoc.idinstructor AND instrdoc.iddocument = document.iddocument AND " +
-                "courdoc.iddocument = document.iddocument AND courdoc.idcourse = course.idcourse AND course.courname = ?";
+                "courdoc.iddocument = document.iddocument AND courdoc.idcourse = course.idcourse AND course.courname = ?" +
+                "AND instructor.idinstructor = ?";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement preparedStatement = connection.prepareStatement(fileQueryStr);
             preparedStatement.setString(1, courseName);
+            preparedStatement.setInt(2,instrId);
+            System.out.println(preparedStatement);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()){
                 Integer curFileID = rs.getInt(1);
