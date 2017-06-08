@@ -113,7 +113,6 @@ public class AddFileDialogController {
         if (checkInputs()){
             String newQuery = "INSERT INTO document (title,docdesc,filetype,uploader,uploaddate,docfile) " + "VALUES (?,?,?,?,?,?)";
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
-                connection.setAutoCommit(false);
                 File newfile = new File(fileTextBox.getText());
                 FileInputStream inputStream = new FileInputStream(newfile);
                 PreparedStatement preparedStatement = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
@@ -134,9 +133,12 @@ public class AddFileDialogController {
                 Stage currStage = (Stage) okButton.getScene().getWindow();
                 currStage.close();
                 Integer courseId = getCourseId(courseComboBox.getSelectionModel().getSelectedItem(),connection);
-                updateIntermediateTable(returnedId,courseId,connection);
+                Integer results = checkCourse(connection,courseId);
+                connection.setAutoCommit(false);
+                updateIntermediateTable(returnedId,courseId,connection,results);
                 connection.commit();
                 connection.close();
+                connection.setAutoCommit(true);
             }  catch (IOException e){
                 System.out.print("IOException");
             }catch (SQLException e) {
@@ -146,6 +148,17 @@ public class AddFileDialogController {
         }
 
 
+    }
+    private Integer checkCourse(Connection connection,Integer courseId) throws SQLException{
+        String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
+        PreparedStatement psCCheck = connection.prepareStatement(checkCourQuery);
+        psCCheck.setInt(1,instrId);
+        psCCheck.setInt(2,courseId);
+        ResultSet rs = psCCheck.executeQuery();
+        rs.next();
+        Integer results = rs.getInt(1);
+        System.out.println(results);
+        return results;
     }
 
     private Integer getCourseId(String courseNum,Connection connection) throws SQLException{
@@ -161,10 +174,9 @@ public class AddFileDialogController {
 
     }
 
-    private void updateIntermediateTable(Integer docId,Integer courseId, Connection connection) throws SQLException{
+    private void updateIntermediateTable(Integer docId,Integer courseId, Connection connection,Integer results) throws SQLException{
         String courDocQuery = "INSERT INTO courdoc (idcourse,iddocument) " + "VALUES (?,?)";
         String instrDocQuery = "INSERT INTO instrdoc (idinstructor,iddocument) " + "VALUES (?,?)";
-        String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
         String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
         PreparedStatement psCD = connection.prepareStatement(courDocQuery);
         psCD.setInt(1,courseId);
@@ -176,14 +188,7 @@ public class AddFileDialogController {
         psID.setInt(2,docId);
         psID.executeUpdate();
 
-
-        PreparedStatement psCCheck = connection.prepareStatement(checkCourQuery);
-        psCCheck.setInt(1,instrId);
-        psCCheck.setInt(2,courseId);
-        ResultSet rs = psCCheck.executeQuery();
-        rs.next();
-        Integer results = rs.getInt(1);
-        if (results > 0) {
+        if (results <= 0) {
             PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
             psIC.setInt(1, instrId);
             psIC.setInt(2, courseId);

@@ -76,6 +76,7 @@ public class CopyFileController {
 
     @FXML
     void handleOk(ActionEvent event) {
+        Stage currStage = (Stage) okButton.getScene().getWindow();
         if (checkInput()) {
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 String courseQuery = "SELECT idcourse FROM project1.course WHERE courname = ?";
@@ -84,13 +85,79 @@ public class CopyFileController {
                 ResultSet rs = ps.executeQuery();
                 rs.next();
                 Integer courseId = rs.getInt(1);
-                String checkCourQuery = "SELECT COUNT";
+                String checkCourQuery = "SELECT count(*) FROM project1.courdoc,project1.instrdoc where courdoc.iddocument = ?" +
+                        " AND courdoc.idcourse = ?  AND instrdoc.iddocument = ? AND instrdoc.idinstructor = ?;";
+                ps = connection.prepareStatement(checkCourQuery);
+                ps.setInt(1,docId);
+                ps.setInt(2,courseId);
+                ps.setInt(3,docId);
+                ps.setInt(4,instrId);
+                rs = ps.executeQuery();
+                rs.next();
+                Integer dupVal = rs.getInt(1);
+                if (dupVal > 0) {
+                    duplicateAlert();
+                    copyComboBox.getSelectionModel().clearSelection();
+                }else {
+                    Integer alreadyCour = checkCourse(connection, courseId);
+                    String courDocQuery = "INSERT INTO courdoc (idcourse,iddocument) " + "VALUES (?,?)";
+                    String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
+                    connection.setAutoCommit(false);
+                    PreparedStatement psCD = connection.prepareStatement(courDocQuery);
+                    psCD.setInt(1, courseId);
+                    psCD.setInt(2, docId);
+                    psCD.executeUpdate();
+
+                    if (alreadyCour <= 0) {
+                        PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
+                        psIC.setInt(1, instrId);
+                        psIC.setInt(2, courseId);
+                        psIC.executeUpdate();
+                        psIC.close();
+                    }
+                    psCD.close();
+
+                    successAlert();
+                }
+                ps.close();
+                rs.close();
+                connection.commit();
+                connection.setAutoCommit(true);
+                connection.close();
             } catch (SQLException e) {
                 throw new IllegalStateException("Cannot connect the database!", e);
 
             }
         }
 
+    }
+
+    private Integer checkCourse(Connection connection,Integer courseId) throws SQLException{
+        String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
+        PreparedStatement psCCheck = connection.prepareStatement(checkCourQuery);
+        psCCheck.setInt(1,instrId);
+        psCCheck.setInt(2,courseId);
+        ResultSet rs = psCCheck.executeQuery();
+        rs.next();
+        Integer results = rs.getInt(1);
+        System.out.println(results);
+        return results;
+    }
+
+    private void duplicateAlert(){
+        Alert duplicateAlert = new Alert(Alert.AlertType.WARNING);
+        duplicateAlert.setTitle("File already exists");
+        duplicateAlert.setHeaderText("File already exists in selected directory");
+        duplicateAlert.setContentText("- The file you chose to copy already exists in selected directory.");
+        duplicateAlert.showAndWait();
+    }
+
+    private void successAlert(){
+        Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+        successAlert.setTitle("Copy Completed");
+        successAlert.setHeaderText("File was Copied");
+        successAlert.setContentText("- Your file was successfully copied.");
+        successAlert.showAndWait();
     }
 
     private Boolean checkInput(){
