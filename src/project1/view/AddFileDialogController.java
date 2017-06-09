@@ -137,8 +137,9 @@ public class AddFileDialogController {
                 connection.setAutoCommit(false);
                 updateIntermediateTable(returnedId,courseId,connection,results);
                 connection.commit();
-                connection.close();
                 connection.setAutoCommit(true);
+                updateTags(connection,returnedId);
+                connection.close();
             }  catch (IOException e){
                 System.out.print("IOException");
             }catch (SQLException e) {
@@ -150,7 +151,8 @@ public class AddFileDialogController {
 
     }
     private Integer checkCourse(Connection connection,Integer courseId) throws SQLException{
-        String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
+        //String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
+        String checkCourQuery = "SELECT count(*) FROM project1.instrcourdoc where idinstructor = ? AND idcourse = ?;";
         PreparedStatement psCCheck = connection.prepareStatement(checkCourQuery);
         psCCheck.setInt(1,instrId);
         psCCheck.setInt(2,courseId);
@@ -175,28 +177,34 @@ public class AddFileDialogController {
     }
 
     private void updateIntermediateTable(Integer docId,Integer courseId, Connection connection,Integer results) throws SQLException{
-        String courDocQuery = "INSERT INTO courdoc (idcourse,iddocument) " + "VALUES (?,?)";
-        String instrDocQuery = "INSERT INTO instrdoc (idinstructor,iddocument) " + "VALUES (?,?)";
-        String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
-        PreparedStatement psCD = connection.prepareStatement(courDocQuery);
-        psCD.setInt(1,courseId);
-        psCD.setInt(2,docId);
-        psCD.executeUpdate();
-
-        PreparedStatement psID = connection.prepareStatement(instrDocQuery);
-        psID.setInt(1,instrId);
-        psID.setInt(2,docId);
-        psID.executeUpdate();
-
-        if (results <= 0) {
-            PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
-            psIC.setInt(1, instrId);
-            psIC.setInt(2, courseId);
-            psIC.executeUpdate();
-            psIC.close();
-        }
-        psCD.close();
-        psID.close();
+//        String courDocQuery = "INSERT INTO courdoc (idcourse,iddocument) " + "VALUES (?,?)";
+//        String instrDocQuery = "INSERT INTO instrdoc (idinstructor,iddocument) " + "VALUES (?,?)";
+//        String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
+//        PreparedStatement psCD = connection.prepareStatement(courDocQuery);
+//        psCD.setInt(1,courseId);
+//        psCD.setInt(2,docId);
+//        psCD.executeUpdate();
+//
+//        PreparedStatement psID = connection.prepareStatement(instrDocQuery);
+//        psID.setInt(1,instrId);
+//        psID.setInt(2,docId);
+//        psID.executeUpdate();
+//
+//        if (results <= 0) {
+//            PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
+//            psIC.setInt(1, instrId);
+//            psIC.setInt(2, courseId);
+//            psIC.executeUpdate();
+//            psIC.close();
+//        }
+//        psCD.close();
+//        psID.close();
+        String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
+        PreparedStatement psICD = connection.prepareStatement(instrCourDocQuery);
+        psICD.setInt(1,instrId);
+        psICD.setInt(2,courseId);
+        psICD.setInt(3,docId);
+        psICD.executeUpdate();
     }
 
     private Boolean checkInputs(){
@@ -212,6 +220,9 @@ public class AddFileDialogController {
         }
         if (fileTextBox.getText() == null || fileTextBox.getText().length() == 0){
             errorMessage += "- Please select a file.\n";
+        }
+        if (tagTextBox.getText() == null || tagTextBox.getText().length() == 0){
+            errorMessage += "- Please enter at least one tag.\n";
         }
 
         if (errorMessage.length() == 0){
@@ -229,5 +240,38 @@ public class AddFileDialogController {
     public void setEmailandID(String email,Integer instrId){
         this.email = email;
         this.instrId = instrId;
+    }
+
+    private void updateTags(Connection connection,Integer docId) throws SQLException{
+        String totalTags = tagTextBox.getText();
+        Integer tagId;
+        String newQuery = "INSERT INTO tag (tagname) " + "VALUES (?)";
+        String tagIntQuery = "INSERT INTO doctag(iddocument,idtag) " + "VALUES (?,?)";
+        PreparedStatement ps = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement ps2 = connection.prepareStatement(tagIntQuery);
+        String[] sepTags = totalTags.split(" ");
+        Integer maxVal;
+        if (sepTags.length >= 10){
+            maxVal = 10;
+        }else{
+            maxVal = sepTags.length;
+        }
+        for (int i = 0; i < maxVal - 1; i++){
+            connection.setAutoCommit(false);
+            ps.setString(1,sepTags[i]);
+            ps.executeUpdate();
+            ResultSet keys = ps.getGeneratedKeys();
+            keys.next();
+            tagId = keys.getInt(1);
+            ps2.setInt(1,docId);
+            ps2.setInt(2,tagId);
+            ps2.executeUpdate();
+            connection.commit();
+            connection.setAutoCommit(true);
+            keys.close();
+        }
+        ps.close();
+        ps2.close();
+
     }
 }

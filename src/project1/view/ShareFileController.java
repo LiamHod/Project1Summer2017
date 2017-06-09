@@ -14,6 +14,8 @@ public class ShareFileController {
     private Integer docId;
     private Integer instrId;
     private String courseName;
+    private Integer resipID;
+    private Integer courseId;
     private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
     private String username = "root";
     private String password = "admin";
@@ -43,7 +45,36 @@ public class ShareFileController {
         if (checkInput()) {
             System.out.println("Valid email");
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
-                checkIfCourse();
+                Boolean hasCourse = checkIfCourse(connection);
+//                String instrDocQuery = "INSERT INTO instrdoc (idinstructor,iddocument) " + "VALUES (?,?)";
+//                String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
+//                connection.setAutoCommit(false);
+//                PreparedStatement psID = connection.prepareStatement(instrDocQuery);
+//                psID.setInt(1,resipID);
+//                psID.setInt(2,docId);
+//                psID.executeUpdate();
+//
+//                if (! hasCourse) {
+//                    PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
+//                    psIC.setInt(1, resipID);
+//                    psIC.setInt(2, courseId);
+//                    psIC.executeUpdate();
+//                    psIC.close();
+//                }
+//                psID.close();
+//                connection.commit();
+//                connection.setAutoCommit(true);
+                if (! hasCourse) {
+                    String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
+                    PreparedStatement psICD = connection.prepareStatement(instrCourDocQuery);
+                    psICD.setInt(1, resipID);
+                    psICD.setInt(2, courseId);
+                    psICD.setInt(3, docId);
+                    psICD.executeUpdate();
+                }
+                connection.close();
+                Stage currStage = (Stage) okButton.getScene().getWindow();
+                currStage.close();
             } catch (SQLException e) {
                 throw new IllegalStateException("Cannot connect the database!", e);
 
@@ -51,8 +82,26 @@ public class ShareFileController {
         }
     }
 
-    private void checkIfCourse(){
-
+    private Boolean checkIfCourse(Connection connection) throws SQLException{
+        String courseQuery = "SELECT idcourse FROM project1.course WHERE courname = ?";
+        PreparedStatement ps = connection.prepareStatement(courseQuery);
+        ps.setString(1,courseName);
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        courseId = rs.getInt(1);
+        //THIS IS OLD STUFF THAT WORKS IF NEEDING TO REVERT
+        //String courseCheckQuery = "SELECT count(*) FROM project1.instrcour WHERE idinstructor = ? AND idcourse = ?;";
+        String courseCheckQuery = "SELECT count(*) FROM project1.instrcourdoc WHERE idinstructor = ? AND idcourse = ? AND iddocument = ?;";
+        ps = connection.prepareStatement(courseCheckQuery);
+        ps.setInt(1,resipID);
+        ps.setInt(2,courseId);
+        ps.setInt(3,docId);
+        rs = ps.executeQuery();
+        rs.next();
+        Integer hasCourse = rs.getInt(1);
+        ps.close();
+        rs.close();
+        return (hasCourse > 0);
     }
 
     private Boolean checkInput(){
@@ -65,17 +114,23 @@ public class ShareFileController {
             return false;
         }
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            String emailCheckQuery = "SELECT count(*) FROM project1.instructor WHERE email = ? AND idinstructor != ?;";
-            String alreadyCheckQuery = "SELECT count(*) FROM project1.instrdoc WHERE idinstructor = ? AND iddocument = ?;";
+            //String emailCheckQuery = "SELECT count(*) FROM project1.instructor WHERE email = ? AND idinstructor != ?;";
+            String alreadyCheckQuery = "SELECT count(*) FROM project1.instrcourdoc WHERE idinstructor = ? AND iddocument = ?;";
+            //OLD GOOD STUFF BELOW
+            //String alreadyCheckQuery = "SELECT count(*) FROM project1.instrdoc WHERE idinstructor = ? AND iddocument = ?;";
             String getIdQuery = "SELECT idinstructor FROM project1.instructor WHERE email = ?";
-            PreparedStatement emailCheck = connection.prepareStatement(emailCheckQuery);
+            //PreparedStatement emailCheck = connection.prepareStatement(emailCheckQuery);
             PreparedStatement alreadyCheck = connection.prepareStatement(alreadyCheckQuery);
             PreparedStatement getIdPS = connection.prepareStatement(getIdQuery);
 
             getIdPS.setString(1,emailTextBox.getText());
             ResultSet rsID = getIdPS.executeQuery();
-            rsID.next();
-            Integer resipID = rsID.getInt(1);
+            if (rsID.next()) {
+                resipID = rsID.getInt(1);
+            }else{
+                validAlert();
+                return false;
+            }
             rsID.close();
             getIdPS.close();
 
@@ -87,19 +142,20 @@ public class ShareFileController {
             rsAL.close();
             alreadyCheck.close();
 
-            emailCheck.setString(1,emailTextBox.getText());
-            emailCheck.setInt(2,instrId);
-            ResultSet rs = emailCheck.executeQuery();
-            rs.next();
-            Integer results = rs.getInt(1);
+            //emailCheck.setString(1,emailTextBox.getText());
+            //emailCheck.setInt(2,instrId);
+            //ResultSet rs = emailCheck.executeQuery();
+            //rs.next();
+            //Integer results = rs.getInt(1);
+            rsAL.close();
+            rsID.close();
+            getIdPS.close();
+            alreadyCheck.close();
             connection.close();
-            emailCheck.close();
-            rs.close();
+            //emailCheck.close();
+            //rs.close();
 
-            if (results == 0){
-                validAlert();
-                return false;
-            }else if(haveFile != 0){
+            if(haveFile != 0){
                 alreadyAlert();
                 return false;
             }

@@ -39,8 +39,8 @@
                   <Button fx:id="fileButton" mnemonicParsing="false" onAction="#handleChooseFile" prefHeight="25.0" prefWidth="102.0" text="Choose file" />
                </children>
             </HBox>
-            <Label text="Tags" GridPane.rowIndex="4" />
-            <TextArea fx:id="tagTextBox" prefHeight="200.0" prefWidth="200.0" promptText="Enter tags" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label text="Tags (Max 10 Tags)&#10;*Seperate each tag&#10;with a space" GridPane.rowIndex="4" />
+            <TextArea fx:id="tagTextBox" prefHeight="200.0" prefWidth="200.0" promptText="Enter tags seperated by a space" GridPane.columnIndex="1" GridPane.rowIndex="4" />
          </children>
       </GridPane>
       <Button fx:id="okButton" layoutX="211.0" layoutY="303.0" mnemonicParsing="false" onAction="#handleOk" prefHeight="25.0" prefWidth="84.0" text="OK" />
