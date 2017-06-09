@@ -1,8 +1,10 @@
 package project1.view;
 
 
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -27,10 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.sql.Date;
+import java.util.*;
 
 public class OverviewController{
 
@@ -48,6 +48,12 @@ public class OverviewController{
 
     @FXML
     private TableColumn<DocFile, String> uploaderColumn;
+
+    @FXML
+    private TableColumn<DocFile, Date> uploadDateColumn;
+
+    @FXML
+    private Hyperlink passwordChangeLink;
 
     private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
     private String username = "root";
@@ -75,6 +81,7 @@ public class OverviewController{
         idColumn.setCellValueFactory(cellData -> cellData.getValue().docidProperty().asObject());
         titleColumn.setCellValueFactory(cellData -> cellData.getValue().docnameProperty());
         uploaderColumn.setCellValueFactory(cellData -> cellData.getValue().docdescProperty());
+        //uploadDateColumn.setCellValueFactory(cellData -> cellData.getValue().getDocdateadded());
         ContextMenu rightClickMenu = fileContextMenu();
         ContextMenu addFileMenu = notfileContextMenu();
 
@@ -96,11 +103,33 @@ public class OverviewController{
 
     }
 
+    @FXML
+    void handlePassChange(ActionEvent event) {
+        try{
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ChangePass.fxml"));
+            AnchorPane changePassPage = (AnchorPane)fxmlLoader.load();
+            Stage changePassStage = new Stage();
+            changePassStage.setTitle("Change Password");
+            changePassStage.initModality(Modality.WINDOW_MODAL);
+            changePassStage.initOwner(currentStage);
+            Scene changePassScene = new Scene(changePassPage);
+            ChangePassController changePassController = fxmlLoader.getController();
+            changePassController.initValues(instrId);
+            changePassStage.setScene(changePassScene);
+            changePassStage.showAndWait();
+            loadData();
+            runPage();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public ContextMenu fileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem downloadMenu = new MenuItem("Download...");
         MenuItem copytoMenu = new MenuItem("Copy to...");
-        MenuItem addtagMenu = new MenuItem("Add Tag...");
+        MenuItem addtagMenu = new MenuItem("Add/Remove Tag...");
         MenuItem shareMenu = new MenuItem("Share...");
         MenuItem deleteMenu = new MenuItem("Delete File");
         rightClickMenu.getItems().addAll(downloadMenu,copytoMenu,addtagMenu,shareMenu,deleteMenu);
@@ -108,18 +137,19 @@ public class OverviewController{
         downloadMenu.setOnAction(e -> downloadFile());
         copytoMenu.setOnAction(e -> copyFile());
         shareMenu.setOnAction(e -> shareFile());
+        addtagMenu.setOnAction(e -> addTag());
+        deleteMenu.setOnAction(e -> deleteFile());
         return rightClickMenu;
     }
 
     public ContextMenu notfileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem addfileMenu = new MenuItem("Add File...");
-        MenuItem searchMenu = new MenuItem("Search...");
+        MenuItem searchMenu = new MenuItem("Search Tags...");
         rightClickMenu.getItems().addAll(addfileMenu,searchMenu);
         rightClickMenu.setAutoHide(true);
-        addfileMenu.setOnAction(e -> {
-            openAddFile();
-        });
+        addfileMenu.setOnAction(e -> openAddFile());
+        searchMenu.setOnAction(e -> searchFiles());
         return rightClickMenu;
     }
 
@@ -217,6 +247,108 @@ public class OverviewController{
         }
     }
 
+    private void addTag(){
+        try{
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddTag.fxml"));
+            AnchorPane addTagPage = (AnchorPane)fxmlLoader.load();
+            Stage addTagStage = new Stage();
+            addTagStage.setTitle("Add/Remove Tags");
+            addTagStage.initModality(Modality.WINDOW_MODAL);
+            addTagStage.initOwner(currentStage);
+            Scene addTagScene = new Scene(addTagPage);
+            AddTagController addTagController = fxmlLoader.getController();
+            addTagController.initValue(selFile.getDocid());
+            addTagController.populateTagTable();
+            addTagStage.setScene(addTagScene);
+            addTagStage.showAndWait();
+            loadData();
+            runPage();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void searchFiles(){
+        try{
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Search.fxml"));
+            AnchorPane searchPage = (AnchorPane)fxmlLoader.load();
+            Stage searchStage = new Stage();
+            searchStage.setTitle("Search Tags");
+            searchStage.initModality(Modality.WINDOW_MODAL);
+            searchStage.initOwner(currentStage);
+            Scene searchScene = new Scene(searchPage);
+            SearchController searchController = fxmlLoader.getController();
+            searchStage.setScene(searchScene);
+            searchStage.showAndWait();
+            loadData();
+            runPage();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteFile(){
+        Alert deleteAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        deleteAlert.setTitle("Delete This File?");
+        deleteAlert.setHeaderText("You are about to delete this file");
+        deleteAlert.setContentText("Are you sure you want to delete this file?");
+        String deleteQuery = "DELETE FROM project1.document WHERE iddocument = ?;";
+        String deleteInterQuery = "DELETE FROM project1.instrcourdoc WHERE iddocument = ? AND idinstructor = ? AND idcourse = ? ;";
+        Optional<ButtonType> result = deleteAlert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            try (Connection connection = DriverManager.getConnection(url, username, password)) {
+                Integer courseId = getCourseId(connection);
+                connection.setAutoCommit(false);
+                PreparedStatement ps1 = connection.prepareStatement(deleteInterQuery);
+                ps1.setInt(1,selFile.getDocid());
+                ps1.setInt(2,instrId);
+                ps1.setInt(3,courseId);
+                ps1.executeUpdate();
+                ps1.close();
+                if (docCheck(connection)){
+                    PreparedStatement ps = connection.prepareStatement(deleteQuery);
+                    ps.setInt(1,selFile.getDocid());
+                    ps.executeUpdate();
+                    ps.close();
+                }
+                connection.commit();
+                connection.setAutoCommit(true);
+                connection.close();
+            }catch (SQLException e) {
+                throw new IllegalStateException("Cannot connect the database!", e);
+            }
+        } else {
+            deleteAlert.close();
+        }
+        loadData();
+        runPage();
+    }
+
+    private Integer getCourseId(Connection connection) throws SQLException{
+        String courseQuery = "SELECT idcourse FROM project1.course WHERE courname = ?";
+        PreparedStatement ps = connection.prepareStatement(courseQuery);
+        ps.setString(1,classes.getSelectionModel().getSelectedItem());
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        Integer courseId = rs.getInt(1);
+        ps.close();
+        rs.close();
+        return courseId;
+    }
+
+    private Boolean docCheck(Connection connection) throws SQLException{
+        String deleteCheck = "SELECT count(*) FROM project1.instrcourdoc WHERE iddocument = ?;";
+        PreparedStatement ps = connection.prepareStatement(deleteCheck);
+        ps.setInt(1,selFile.getDocid());
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+        Integer results = rs.getInt(1);
+        ps.close();
+        rs.close();
+        return (results < 1);
+    }
+
+
     public void setLogCont(LoginController logCont){
         this.logCont = logCont;
 
@@ -226,7 +358,8 @@ public class OverviewController{
     }
 
     public void loadData(){
-        String newQuery = "SELECT DISTINCT courname FROM project1.course,project1.instrcour WHERE idinstructor = ? AND course.idcourse = instrcour.idcourse;";
+        //String newQuery = "SELECT DISTINCT courname FROM project1.course,project1.instrcour WHERE idinstructor = ? AND course.idcourse = instrcour.idcourse;";
+        String newQuery = "SELECT DISTINCT courname FROM project1.course,project1.instrcourdoc WHERE idinstructor = ? AND course.idcourse = instrcourdoc.idcourse;";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             List<String> values = new ArrayList<>();
             PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
@@ -285,20 +418,25 @@ public class OverviewController{
     public ObservableList<DocFile> queryFiles(String courseName){
         List<String> fileTemp = new ArrayList<String>();
 
-        String fileQueryStr = "SELECT document.iddocument,title,uploader FROM instructor,document,course,courdoc,instrdoc WHERE " +
-                "instructor.idinstructor = instrdoc.idinstructor AND instrdoc.iddocument = document.iddocument AND " +
-                "courdoc.iddocument = document.iddocument AND courdoc.idcourse = course.idcourse AND course.courname = ?" +
+//        String fileQueryStr = "SELECT document.iddocument,title,uploader FROM instructor,document,course,courdoc,instrdoc WHERE " +
+//                "instructor.idinstructor = instrdoc.idinstructor AND instrdoc.iddocument = document.iddocument AND " +
+//                "courdoc.iddocument = document.iddocument AND courdoc.idcourse = course.idcourse AND course.courname = ?" +
+//                "AND instructor.idinstructor = ?";
+        String fileQueryStr = "SELECT document.iddocument,title,uploader,uploaddate FROM instructor,document,course,instrcourdoc WHERE " +
+                "instructor.idinstructor = instrcourdoc.idinstructor AND instrcourdoc.iddocument = document.iddocument AND " +
+                "instrcourdoc.iddocument = document.iddocument AND instrcourdoc.idcourse = course.idcourse AND course.courname = ?" +
                 "AND instructor.idinstructor = ?";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement preparedStatement = connection.prepareStatement(fileQueryStr);
             preparedStatement.setString(1, courseName);
             preparedStatement.setInt(2,instrId);
-            System.out.println(preparedStatement);
+            //System.out.println(preparedStatement);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()){
                 Integer curFileID = rs.getInt(1);
                 String curFileTitle = rs.getString(2);
                 String curFileUploader = rs.getString(3);
+                Date curUploadDate = rs.getDate(4);
                 fileList.add(new DocFile(curFileID,curFileTitle,curFileUploader));
                 //fileTemp.add(curFile);
             }

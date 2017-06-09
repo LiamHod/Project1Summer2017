@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -21,6 +22,11 @@
                      </children>
                   </HBox>
                   <ListView fx:id="classes" prefHeight="400.0" prefWidth="200.0" />
+                  <AnchorPane prefHeight="2.0" prefWidth="175.0">
+                     <children>
+                        <Hyperlink fx:id="passwordChangeLink" alignment="CENTER" onAction="#handlePassChange" text="Change Password?" />
+                     </children>
+                  </AnchorPane>
                </children>
             </VBox>
          </children></AnchorPane>
@@ -38,6 +44,7 @@
                         <TableColumn fx:id="idColumn" prefWidth="75.0" text="iddocument" visible="false" />
                       <TableColumn fx:id="titleColumn" prefWidth="290.6666259765625" text="Title" />
                       <TableColumn fx:id="uploaderColumn" prefWidth="124.3333740234375" text="Uploader" />
+                        <TableColumn fx:id="uploadDateColumn" prefWidth="75.0" text="Upload Date" visible="false" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

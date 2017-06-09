@@ -1,22 +1,23 @@
 package project1.model;
 
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
+
+import java.util.Date;
 
 public class DocFile {
 
     private final IntegerProperty docid;
     private final StringProperty docname;
     private final StringProperty docdesc;
+    //private final ObjectProperty<Date> docdateadded;
 
 
     public DocFile(Integer docid, String docname, String docdesc){
         this.docid = new SimpleIntegerProperty(docid);
         this.docname = new SimpleStringProperty(docname);
         this.docdesc = new SimpleStringProperty(docdesc);
+        //this.docdateadded = new SimpleObjectProperty<Date>(docdateadded);
     }
 
     public int getDocid() {
@@ -54,6 +55,18 @@ public class DocFile {
     public void setDocdesc(String docdesc) {
         this.docdesc.set(docdesc);
     }
+
+//    public Date getDocdateadded() {
+//        return docdateadded.get();
+//    }
+//
+//    public ObjectProperty<Date> docdateaddedProperty() {
+//        return docdateadded;
+//    }
+//
+//    public void setDocdateadded(Date docdateadded) {
+//        this.docdateadded.set(docdateadded);
+//    }
 
     @Override
     public String toString() {

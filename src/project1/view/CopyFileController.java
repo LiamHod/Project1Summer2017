@@ -85,8 +85,10 @@ public class CopyFileController {
                 ResultSet rs = ps.executeQuery();
                 rs.next();
                 Integer courseId = rs.getInt(1);
-                String checkCourQuery = "SELECT count(*) FROM project1.courdoc,project1.instrdoc where courdoc.iddocument = ?" +
-                        " AND courdoc.idcourse = ?  AND instrdoc.iddocument = ? AND instrdoc.idinstructor = ?;";
+//                String checkCourQuery = "SELECT count(*) FROM project1.courdoc,project1.instrdoc where courdoc.iddocument = ?" +
+//                        " AND courdoc.idcourse = ?  AND instrdoc.iddocument = ? AND instrdoc.idinstructor = ?;";
+                String checkCourQuery = "SELECT count(*) FROM project1.instrcourdoc where instrcourdoc.iddocument = ?" +
+                        " AND instrcourdoc.idcourse = ?  AND instrcourdoc.iddocument = ? AND instrcourdoc.idinstructor = ?;";
                 ps = connection.prepareStatement(checkCourQuery);
                 ps.setInt(1,docId);
                 ps.setInt(2,courseId);
@@ -100,22 +102,28 @@ public class CopyFileController {
                     copyComboBox.getSelectionModel().clearSelection();
                 }else {
                     Integer alreadyCour = checkCourse(connection, courseId);
-                    String courDocQuery = "INSERT INTO courdoc (idcourse,iddocument) " + "VALUES (?,?)";
-                    String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
+                    //String courDocQuery = "INSERT INTO courdoc (idcourse,iddocument) " + "VALUES (?,?)";
+                    //String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
+                    String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
                     connection.setAutoCommit(false);
-                    PreparedStatement psCD = connection.prepareStatement(courDocQuery);
-                    psCD.setInt(1, courseId);
-                    psCD.setInt(2, docId);
+                    PreparedStatement psCD = connection.prepareStatement(instrCourDocQuery);
+                    psCD.setInt(1, instrId);
+                    psCD.setInt(2, courseId);
+                    psCD.setInt(3, docId);
                     psCD.executeUpdate();
-
-                    if (alreadyCour <= 0) {
-                        PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
-                        psIC.setInt(1, instrId);
-                        psIC.setInt(2, courseId);
-                        psIC.executeUpdate();
-                        psIC.close();
-                    }
-                    psCD.close();
+//                    PreparedStatement psCD = connection.prepareStatement(courDocQuery);
+//                    psCD.setInt(1, courseId);
+//                    psCD.setInt(2, docId);
+//                    psCD.executeUpdate();
+//
+//                    if (alreadyCour <= 0) {
+//                        PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
+//                        psIC.setInt(1, instrId);
+//                        psIC.setInt(2, courseId);
+//                        psIC.executeUpdate();
+//                        psIC.close();
+//                    }
+//                    psCD.close();
 
                     successAlert();
                 }
@@ -133,7 +141,8 @@ public class CopyFileController {
     }
 
     private Integer checkCourse(Connection connection,Integer courseId) throws SQLException{
-        String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
+        //String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
+        String checkCourQuery = "SELECT count(*) FROM project1.instrcourdoc where idinstructor = ? AND idcourse = ?;";
         PreparedStatement psCCheck = connection.prepareStatement(checkCourQuery);
         psCCheck.setInt(1,instrId);
         psCCheck.setInt(2,courseId);

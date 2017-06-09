@@ -6,10 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import project1.MainApp;
 
@@ -66,17 +63,17 @@ public class LoginController {
         String newQuery = "SELECT password,idinstructor FROM instructor WHERE email = ?";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             System.out.println("Database connected!");
-            PreparedStatement preparedStatement = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
-            preparedStatement.setString(1,email);
-            ResultSet rs  = preparedStatement.executeQuery();
+            PreparedStatement preparedStatement = connection.prepareStatement(newQuery, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1, email);
+            ResultSet rs = preparedStatement.executeQuery();
 
-            if (rs.next()){
+            if (rs.next()) {
 
                 String passcheck = rs.getString(1);
                 //DO THE PASSWORD SECURITY CHECK
                 //System.out.println(passcheck);
                 //System.out.println(pass);
-                if (passcheck.equals(pass)){
+                if (passcheck.equals(pass)) {
                     //System.out.println("HERE");
                     instrid = rs.getInt(2);
                     //System.out.println(instrid);
@@ -85,10 +82,10 @@ public class LoginController {
                     initMainScreen(email);
 
 
-                }else{
+                } else {
                     loginFailed();
                 }
-            }else{
+            } else {
                 loginFailed();
             }
             preparedStatement.close();
@@ -98,12 +95,8 @@ public class LoginController {
         } catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
         }
-
-
-
-
-
     }
+
     public void setMainApp(MainApp mainApp,Stage mainGui){
         this.mainApp = mainApp;
         this.mainGui = mainGui;
