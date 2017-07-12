@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
+import project1.model.DBCreds;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,11 +27,17 @@ import java.util.List;
 public class AddFileDialogController {
 
     private String filePath;
-    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-    private String username = "root";
-    private String password = "admin";
+//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
+//    private String username = "root";
+//    private String password = "admin";
+    private DBCreds dbCreds = DBCreds.INSTANCE;
+    private String url = dbCreds.getUrl();
+    private String username = dbCreds.getUsername();
+    private String password = dbCreds.getPassword();
     private String email;
     private Integer instrId;
+    private Integer courseId;
+    private String courname;
 
     @FXML
     private TextField titleTextBox;
@@ -39,7 +46,7 @@ public class AddFileDialogController {
     private TextArea descTextBox;
 
     @FXML
-    private ComboBox<String> courseComboBox;
+    private Label courseLabel;
 
     @FXML
     private TextArea tagTextBox;
@@ -58,25 +65,25 @@ public class AddFileDialogController {
 
     @FXML
     private void initialize(){
-        String newQuery = "SELECT courname FROM project1.course;";
-        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            List<String> courses = new ArrayList<>();
-            PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
-            ResultSet rs = preparedStatement.executeQuery();
-            while (rs.next()){
-                String curClass = rs.getString(1);
-                courses.add(curClass);
-            }
-            ObservableList<String> courseList = FXCollections.observableArrayList(courses);
-            courseComboBox.getItems().clear();
-            courseComboBox.setItems(courseList);
-            preparedStatement.close();
-            connection.close();
-            rs.close();
-
-        }catch (SQLException e) {
-            throw new IllegalStateException("Cannot connect the database!", e);
-        }
+//        String newQuery = "SELECT courname FROM project1.course;";
+//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+//            List<String> courses = new ArrayList<>();
+//            PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
+//            ResultSet rs = preparedStatement.executeQuery();
+//            while (rs.next()){
+//                String curClass = rs.getString(1);
+//                courses.add(curClass);
+//            }
+//            ObservableList<String> courseList = FXCollections.observableArrayList(courses);
+//            courseComboBox.getItems().clear();
+//            courseComboBox.setItems(courseList);
+//            preparedStatement.close();
+//            connection.close();
+//            rs.close();
+//
+//        }catch (SQLException e) {
+//            throw new IllegalStateException("Cannot connect the database!", e);
+//        }
     }
 
     @FXML
@@ -132,7 +139,7 @@ public class AddFileDialogController {
                 keys.close();
                 Stage currStage = (Stage) okButton.getScene().getWindow();
                 currStage.close();
-                Integer courseId = getCourseId(courseComboBox.getSelectionModel().getSelectedItem(),connection);
+                //Integer courseId = getCourseId(courseComboBox.getSelectionModel().getSelectedItem(),connection);
                 Integer results = checkCourse(connection,courseId);
                 connection.setAutoCommit(false);
                 updateIntermediateTable(returnedId,courseId,connection,results);
@@ -212,12 +219,6 @@ public class AddFileDialogController {
         if (titleTextBox.getText() == null || titleTextBox.getText().length() == 0){
             errorMessage += "- Not a valid title.\n";
         }
-        if (descTextBox.getText() == null || descTextBox.getText().length() == 0){
-            errorMessage += "- Not a valid description.\n";
-        }
-        if (courseComboBox.getSelectionModel().getSelectedItem() == null){
-            errorMessage += "- Please select an option from course combobox.\n";
-        }
         if (fileTextBox.getText() == null || fileTextBox.getText().length() == 0){
             errorMessage += "- Please select a file.\n";
         }
@@ -237,9 +238,13 @@ public class AddFileDialogController {
         }
     }
 
-    public void setEmailandID(String email,Integer instrId){
+    public void setEmailandID(String email,Integer instrId, Integer courID, String courname){
         this.email = email;
         this.instrId = instrId;
+        this.courseId = courID;
+        this.courname = courname;
+        courseLabel.setText(courname);
+        courseLabel.setVisible(true);
     }
 
     private void updateTags(Connection connection,Integer docId) throws SQLException{
@@ -247,8 +252,10 @@ public class AddFileDialogController {
         Integer tagId;
         String newQuery = "INSERT INTO tag (tagname) " + "VALUES (?)";
         String tagIntQuery = "INSERT INTO doctag(iddocument,idtag) " + "VALUES (?,?)";
+        String tagExistsQuery = "SELECT idtag FROM tag WHERE tagname = ?;";
         PreparedStatement ps = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
         PreparedStatement ps2 = connection.prepareStatement(tagIntQuery);
+        PreparedStatement existsps = connection.prepareStatement(tagExistsQuery);
         String[] sepTags = totalTags.split(" ");
         Integer maxVal;
         if (sepTags.length >= 10){
@@ -256,22 +263,31 @@ public class AddFileDialogController {
         }else{
             maxVal = sepTags.length;
         }
-        for (int i = 0; i < maxVal - 1; i++){
+        for (int i = 0; i < maxVal; i++){
             connection.setAutoCommit(false);
-            ps.setString(1,sepTags[i]);
-            ps.executeUpdate();
-            ResultSet keys = ps.getGeneratedKeys();
-            keys.next();
-            tagId = keys.getInt(1);
+            existsps.setString(1,sepTags[i]);
+            ResultSet existsRs = existsps.executeQuery();
+            if (existsRs.next()){
+                tagId = existsRs.getInt(1);
+                existsRs.close();
+
+            }else {
+                ps.setString(1, sepTags[i]);
+                ps.executeUpdate();
+                ResultSet keys = ps.getGeneratedKeys();
+                keys.next();
+                tagId = keys.getInt(1);
+                keys.close();
+            }
             ps2.setInt(1,docId);
             ps2.setInt(2,tagId);
             ps2.executeUpdate();
             connection.commit();
             connection.setAutoCommit(true);
-            keys.close();
         }
         ps.close();
         ps2.close();
+        existsps.close();
 
     }
 }

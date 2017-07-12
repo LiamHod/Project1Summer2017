@@ -19,6 +19,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import project1.MainApp;
+import project1.model.DBConn;
+import project1.model.DBCreds;
 import project1.model.DocFile;
 import sample.Controller;
 import sun.rmi.runtime.Log;
@@ -55,9 +57,13 @@ public class OverviewController{
     @FXML
     private Hyperlink passwordChangeLink;
 
-    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-    private String username = "root";
-    private String password = "admin";
+//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
+//    private String username = "root";
+//    private String password = "admin";
+    private DBCreds dbCreds = DBCreds.INSTANCE;
+    private String url = dbCreds.getUrl();
+    private String username = dbCreds.getUsername();
+    private String password = dbCreds.getPassword();
     private String email;
     private MainApp mainApp;
     private LoginController logCont;
@@ -154,25 +160,40 @@ public class OverviewController{
     }
 
     public void openAddFile(){
-        try{
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFile.fxml"));
-            AnchorPane addFilePage = (AnchorPane)fxmlLoader.load();
-            Stage fileStage = new Stage();
-            fileStage.setTitle("Add File");
-            fileStage.initModality(Modality.WINDOW_MODAL);
-            fileStage.initOwner(currentStage);
-            Scene fileScene = new Scene(addFilePage);
-            AddFileDialogController fileController = fxmlLoader.getController();
-            fileController.setEmailandID(email,instrId);
-            fileStage.setScene(fileScene);
-            fileStage.showAndWait();
-            loadData();
-            runPage();
+        if (classes.getSelectionModel().getSelectedItem() != null) {
+            try {
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFile.fxml"));
+                AnchorPane addFilePage = (AnchorPane) fxmlLoader.load();
+                Stage fileStage = new Stage();
+                fileStage.setTitle("Add File");
+                fileStage.initModality(Modality.WINDOW_MODAL);
+                fileStage.initOwner(currentStage);
+                Scene fileScene = new Scene(addFilePage);
+                AddFileDialogController fileController = fxmlLoader.getController();
+                Integer courID;
+                try (Connection connection = DriverManager.getConnection(url, username, password)) {
+                    courID = getCourseId(connection);
+                } catch (SQLException e) {
+                    throw new IllegalStateException("Cannot connect the database!", e);
+                }
+                fileController.setEmailandID(email, instrId, courID, classes.getSelectionModel().getSelectedItem());
+                fileStage.setScene(fileScene);
+                fileStage.showAndWait();
+                loadData();
+                runPage();
 
-        }catch (IOException e){
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+            Alert noClassSel = new Alert(Alert.AlertType.INFORMATION);
+            noClassSel.setTitle("No Class Selected");
+            noClassSel.setHeaderText(null);
+            noClassSel.setContentText("Please select a class first");
+            noClassSel.showAndWait();
         }
     }
+
     public void downloadFile(){
         FileChooser fileChooser = new FileChooser();
         //FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
