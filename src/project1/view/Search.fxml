@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -7,8 +8,8 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
-
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="project1.view.SearchController">
    <children>
@@ -45,7 +46,15 @@
             </TableView>
          </children>
       </GridPane>
-      <Button fx:id="cancelButton" layoutX="206.0" layoutY="361.0" mnemonicParsing="false" onAction="#handleCancel" prefWidth="84.0" text="Cancel" />
-      <Button fx:id="okButton" layoutX="112.0" layoutY="361.0" mnemonicParsing="false" onAction="#handleOk" prefWidth="84.0" text="OK" />
+      <HBox layoutX="108.0" layoutY="361.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
+         <children>
+            <Button fx:id="okButton" mnemonicParsing="false" onAction="#handleOk" prefHeight="25.0" prefWidth="84.0" text="OK">
+               <HBox.margin>
+                  <Insets right="10.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancel" prefHeight="25.0" prefWidth="84.0" text="Cancel" />
+         </children>
+      </HBox>
    </children>
 </AnchorPane>

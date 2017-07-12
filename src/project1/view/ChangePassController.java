@@ -24,14 +24,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import project1.model.DBCreds;
 
 import java.sql.*;
 
 public class ChangePassController {
 
-    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-    private String username = "root";
-    private String password = "admin";
+//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
+//    private String username = "root";
+//    private String password = "admin";
+    private DBCreds dbCreds = DBCreds.INSTANCE;
+    private String url = dbCreds.getUrl();
+    private String username = dbCreds.getUsername();
+    private String password = dbCreds.getPassword();
     private Integer instrId;
 
     @FXML

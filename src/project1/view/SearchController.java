@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import project1.model.DBCreds;
 import project1.model.SearchResults;
 import project1.model.Tag;
 
@@ -13,9 +14,13 @@ import java.sql.*;
 
 public class SearchController {
 
-    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-    private String username = "root";
-    private String password = "admin";
+//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
+//    private String username = "root";
+//    private String password = "admin";
+    private DBCreds dbCreds = DBCreds.INSTANCE;
+    private String url = dbCreds.getUrl();
+    private String username = dbCreds.getUsername();
+    private String password = dbCreds.getPassword();
     private ObservableList<SearchResults> searchList = FXCollections.observableArrayList();
 
     @FXML
