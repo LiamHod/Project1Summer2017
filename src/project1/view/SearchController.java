@@ -22,6 +22,7 @@ public class SearchController {
     private String username = dbCreds.getUsername();
     private String password = dbCreds.getPassword();
     private ObservableList<SearchResults> searchList = FXCollections.observableArrayList();
+    private Integer instrId;
 
     @FXML
     private TextField searchTextBox;
@@ -65,14 +66,18 @@ public class SearchController {
     @FXML
     void handleSearch(ActionEvent event) {
         resultsTable.getItems().clear();
-        String searchQuery = "SELECT DISTINCT course.courname,document.title FROM project1.document,project1.course," +
-                "project1.doctag,project1.tag,project1.instrcourdoc WHERE instrcourdoc.idinstructor = 1 AND " +
+        String searchQuery = "SELECT DISTINCT course.courname,document.title FROM document,course," +
+                "doctag,tag,instrcourdoc WHERE instrcourdoc.idinstructor = ? AND " +
                 "document.iddocument = instrcourdoc.iddocument AND course.idcourse = instrcourdoc.idcourse AND " +
-                "tag.idtag = doctag.idtag AND document.iddocument = doctag.iddocument AND tagname = ?";
+                "tag.idtag = doctag.idtag AND document.iddocument = doctag.iddocument AND tagname = ? OR " +
+                "document.title = ? OR course.courname = ? ORDER BY courname";
         if (checkInput()){
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 PreparedStatement ps = connection.prepareStatement(searchQuery);
-                ps.setString(1,searchTextBox.getText());
+                ps.setInt(1,instrId);
+                ps.setString(2,searchTextBox.getText());
+                ps.setString(3,searchTextBox.getText());
+                ps.setString(4,searchTextBox.getText());
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()){
                     String curCourName = rs.getString(1);
@@ -102,6 +107,10 @@ public class SearchController {
         }else{
             return true;
         }
+    }
+
+    public void initValue(Integer instrId){
+        this.instrId = instrId;
     }
 
 }

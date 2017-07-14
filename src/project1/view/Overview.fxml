@@ -44,7 +44,7 @@
                         <TableColumn fx:id="idColumn" prefWidth="75.0" text="iddocument" visible="false" />
                       <TableColumn fx:id="titleColumn" prefWidth="290.6666259765625" text="Title" />
                       <TableColumn fx:id="uploaderColumn" prefWidth="124.3333740234375" text="Uploader" />
-                        <TableColumn fx:id="uploadDateColumn" prefWidth="75.0" text="Upload Date" visible="false" />
+                        <TableColumn fx:id="uploadDateColumn" prefWidth="75.0" text="Upload Date" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

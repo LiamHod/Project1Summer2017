@@ -65,38 +65,49 @@ public class AddTagController {
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 Integer tagId;
                 String newQuery = "INSERT INTO tag (tagname) " + "VALUES (?)";
-                String tagIntQuery = "INSERT INTO doctag(iddocument,idtag) " + "VALUES (?,?)";
+                String tagIntQuery = "INSERT INTO doctag (iddocument, idtag)\n" +
+                        "SELECT * FROM (SELECT ?, ?) AS tmp\n" +
+                        "WHERE NOT EXISTS (\n" +
+                        "    SELECT iddocument FROM doctag WHERE iddocument = ? and idtag = ?\n" +
+                        ") LIMIT 1;";
+                String tagExistsQuery = "SELECT idtag FROM tag WHERE tagname = ?;";
                 PreparedStatement ps = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
                 PreparedStatement ps2 = connection.prepareStatement(tagIntQuery);
+                PreparedStatement existsps = connection.prepareStatement(tagExistsQuery);
                 String[] sepTags = totalTags.split(" ");
                 Integer maxVal;
-                System.out.println("tags left:");
-                System.out.println(tagsLeft);
                 if (sepTags.length >= tagsLeft){
                     maxVal = tagsLeft;
                 }else{
                     maxVal = sepTags.length;
                 }
-                System.out.println("maxval:");
-                System.out.println(maxVal);
                 for (int i = 0; i < maxVal; i++){
-                    System.out.println("septags:");
-                    System.out.println(sepTags[i]);
                     connection.setAutoCommit(false);
-                    ps.setString(1,sepTags[i]);
-                    ps.executeUpdate();
-                    ResultSet keys = ps.getGeneratedKeys();
-                    keys.next();
-                    tagId = keys.getInt(1);
+                    existsps.setString(1,sepTags[i]);
+                    ResultSet existsRs = existsps.executeQuery();
+                    if (existsRs.next()){
+                        tagId = existsRs.getInt(1);
+                        existsRs.close();
+
+                    }else {
+                        ps.setString(1, sepTags[i]);
+                        ps.executeUpdate();
+                        ResultSet keys = ps.getGeneratedKeys();
+                        keys.next();
+                        tagId = keys.getInt(1);
+                        keys.close();
+                    }
                     ps2.setInt(1,docId);
                     ps2.setInt(2,tagId);
+                    ps2.setInt(3,docId);
+                    ps2.setInt(4,tagId);
                     ps2.executeUpdate();
                     connection.commit();
                     connection.setAutoCommit(true);
-                    keys.close();
                 }
                 ps.close();
                 ps2.close();
+                existsps.close();
                 connection.close();
                 tagTextBox.clear();
             }catch (SQLException e) {
@@ -122,10 +133,11 @@ public class AddTagController {
     @FXML
     void handleRemove(ActionEvent event) {
         Tag selTag = tagTableView.getSelectionModel().getSelectedItem();
-        String delTagQuery = "DELETE FROM project1.tag WHERE idtag = ?;";
+        String delTagQuery = "DELETE FROM doctag WHERE idtag = ? AND iddocument = ?;";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement ps = connection.prepareStatement(delTagQuery);
             ps.setInt(1,selTag.getTagid());
+            ps.setInt(2,docId);
             ps.executeUpdate();
             ps.close();
             connection.close();

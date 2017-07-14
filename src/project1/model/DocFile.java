@@ -3,6 +3,8 @@ package project1.model;
 
 import javafx.beans.property.*;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DocFile {
@@ -10,14 +12,16 @@ public class DocFile {
     private final IntegerProperty docid;
     private final StringProperty docname;
     private final StringProperty docdesc;
-    //private final ObjectProperty<Date> docdateadded;
+    private final StringProperty docdateadded;
 
 
-    public DocFile(Integer docid, String docname, String docdesc){
+    public DocFile(Integer docid, String docname, String docdesc, Date docdateadded){
         this.docid = new SimpleIntegerProperty(docid);
         this.docname = new SimpleStringProperty(docname);
         this.docdesc = new SimpleStringProperty(docdesc);
-        //this.docdateadded = new SimpleObjectProperty<Date>(docdateadded);
+        Format formatter = new SimpleDateFormat("MM/dd/yyyy");
+        String docdateaddedstring = formatter.format(docdateadded);
+        this.docdateadded = new SimpleStringProperty(docdateaddedstring);
     }
 
     public int getDocid() {
@@ -56,17 +60,17 @@ public class DocFile {
         this.docdesc.set(docdesc);
     }
 
-//    public Date getDocdateadded() {
-//        return docdateadded.get();
-//    }
-//
-//    public ObjectProperty<Date> docdateaddedProperty() {
-//        return docdateadded;
-//    }
-//
-//    public void setDocdateadded(Date docdateadded) {
-//        this.docdateadded.set(docdateadded);
-//    }
+    public String getDocdateadded() {
+        return docdateadded.get();
+    }
+
+    public StringProperty docdateaddedProperty() {
+        return docdateadded;
+    }
+
+    public void setDocdateadded(String docdateadded) {
+        this.docdateadded.set(docdateadded);
+    }
 
     @Override
     public String toString() {
