@@ -4,9 +4,11 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import project1.model.DBCreds;
+import project1.model.DocFile;
 
 import java.sql.*;
 
@@ -15,6 +17,7 @@ public class ShareFileController {
     private Integer docId;
     private Integer instrId;
     private String courseName;
+    private String docName;
     private Integer resipID;
     private Integer courseId;
 //    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
@@ -32,6 +35,9 @@ public class ShareFileController {
 
     @FXML
     private TextField emailTextBox;
+
+    @FXML
+    private Label fileNameLabel;
 
     @FXML
     private Button cancelButton;
@@ -76,6 +82,7 @@ public class ShareFileController {
                     psICD.setInt(2, courseId);
                     psICD.setInt(3, docId);
                     psICD.executeUpdate();
+                    successAlert();
                 }
                 connection.close();
                 Stage currStage = (Stage) okButton.getScene().getWindow();
@@ -190,11 +197,22 @@ public class ShareFileController {
         alreadyAlert.showAndWait();
     }
 
+    private void successAlert(){
+        Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+        successAlert.setTitle("Share Completed");
+        successAlert.setHeaderText(null);
+        successAlert.setContentText("- Your file was successfully shared.");
+        successAlert.showAndWait();
+    }
 
-    public void initFileIdAndUserId(Integer docId,Integer instrId,String courseName){
-        this.docId = docId;
+
+    public void initFileIdAndUserId(DocFile selFile, Integer instrId, String courseName){
+        this.docId = selFile.getDocid();
+        this.docName = selFile.getDocname();
         this.instrId = instrId;
         this.courseName = courseName;
+        fileNameLabel.setText(docName);
+        fileNameLabel.setVisible(true);
     }
 
 }

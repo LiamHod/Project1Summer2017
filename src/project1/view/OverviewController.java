@@ -1,9 +1,16 @@
 package project1.view;
 
+//Apache Commons IO
+//        Copyright 2002-2016 The Apache Software Foundation
+//
+//        This product includes software developed at
+//        The Apache Software Foundation (http://www.apache.org/).
+
 
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -11,6 +18,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import org.apache.commons.io.FilenameUtils;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -52,7 +60,7 @@ public class OverviewController{
     private TableColumn<DocFile, String> uploaderColumn;
 
     @FXML
-    private TableColumn<DocFile, Date> uploadDateColumn;
+    private TableColumn<DocFile, String> uploadDateColumn;
 
     @FXML
     private Hyperlink passwordChangeLink;
@@ -87,7 +95,7 @@ public class OverviewController{
         idColumn.setCellValueFactory(cellData -> cellData.getValue().docidProperty().asObject());
         titleColumn.setCellValueFactory(cellData -> cellData.getValue().docnameProperty());
         uploaderColumn.setCellValueFactory(cellData -> cellData.getValue().docdescProperty());
-        //uploadDateColumn.setCellValueFactory(cellData -> cellData.getValue().getDocdateadded());
+        uploadDateColumn.setCellValueFactory(cellData -> cellData.getValue().docdateaddedProperty());
         ContextMenu rightClickMenu = fileContextMenu();
         ContextMenu addFileMenu = notfileContextMenu();
 
@@ -133,13 +141,15 @@ public class OverviewController{
 
     public ContextMenu fileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
+        MenuItem renameMenu = new MenuItem("Rename...");
         MenuItem downloadMenu = new MenuItem("Download...");
         MenuItem copytoMenu = new MenuItem("Copy to...");
         MenuItem addtagMenu = new MenuItem("Add/Remove Tag...");
         MenuItem shareMenu = new MenuItem("Share...");
         MenuItem deleteMenu = new MenuItem("Delete File");
-        rightClickMenu.getItems().addAll(downloadMenu,copytoMenu,addtagMenu,shareMenu,deleteMenu);
+        rightClickMenu.getItems().addAll(renameMenu,downloadMenu,copytoMenu,addtagMenu,shareMenu,deleteMenu);
         rightClickMenu.setAutoHide(true);
+        renameMenu.setOnAction(e -> renameFile());
         downloadMenu.setOnAction(e -> downloadFile());
         copytoMenu.setOnAction(e -> copyFile());
         shareMenu.setOnAction(e -> shareFile());
@@ -151,12 +161,33 @@ public class OverviewController{
     public ContextMenu notfileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem addfileMenu = new MenuItem("Add File...");
-        MenuItem searchMenu = new MenuItem("Search Tags...");
+        MenuItem searchMenu = new MenuItem("Search Files...");
         rightClickMenu.getItems().addAll(addfileMenu,searchMenu);
         rightClickMenu.setAutoHide(true);
         addfileMenu.setOnAction(e -> openAddFile());
         searchMenu.setOnAction(e -> searchFiles());
         return rightClickMenu;
+    }
+
+    public void renameFile(){
+        try{
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Rename.fxml"));
+            AnchorPane renameFilePage = (AnchorPane)fxmlLoader.load();
+            Stage renameStage = new Stage();
+            renameStage.setTitle("Rename File");
+            renameStage.initModality(Modality.WINDOW_MODAL);
+            renameStage.initOwner(currentStage);
+            Scene renameScene = new Scene(renameFilePage);
+            RenameController renameController = fxmlLoader.getController();
+            renameController.initValues(instrId,classes.getSelectionModel().getSelectedItem(),selFile);
+            renameStage.setScene(renameScene);
+            renameStage.showAndWait();
+            loadData();
+            runPage();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     public void openAddFile(){
@@ -198,6 +229,7 @@ public class OverviewController{
         FileChooser fileChooser = new FileChooser();
         //FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         //fileChooser.getExtensionFilters().add(extFilter);
+        fileChooser.setInitialFileName(selFile.getDocname());
         File file = fileChooser.showSaveDialog(currentStage);
         if(file != null) {
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
@@ -235,7 +267,7 @@ public class OverviewController{
             copyStage.initOwner(currentStage);
             Scene copyScene = new Scene(copyFilePage);
             CopyFileController copyFileController = fxmlLoader.getController();
-            copyFileController.setIdAndCurrCour(instrId,classes.getSelectionModel().getSelectedItem(),selFile.getDocid());
+            copyFileController.setIdAndCurrCour(instrId,classes.getSelectionModel().getSelectedItem(),selFile);
             copyFileController.loadComboBox();
             copyStage.setScene(copyScene);
             copyStage.showAndWait();
@@ -257,7 +289,7 @@ public class OverviewController{
             shareStage.initOwner(currentStage);
             Scene shareScene = new Scene(shareFilePage);
             ShareFileController shareFileController = fxmlLoader.getController();
-            shareFileController.initFileIdAndUserId(selFile.getDocid(),instrId,classes.getSelectionModel().getSelectedItem());
+            shareFileController.initFileIdAndUserId(selFile, instrId, classes.getSelectionModel().getSelectedItem());
             shareStage.setScene(shareScene);
             shareStage.showAndWait();
             loadData();
@@ -299,6 +331,7 @@ public class OverviewController{
             searchStage.initOwner(currentStage);
             Scene searchScene = new Scene(searchPage);
             SearchController searchController = fxmlLoader.getController();
+            searchController.initValue(instrId);
             searchStage.setScene(searchScene);
             searchStage.showAndWait();
             loadData();
@@ -313,8 +346,8 @@ public class OverviewController{
         deleteAlert.setTitle("Delete This File?");
         deleteAlert.setHeaderText("You are about to delete this file");
         deleteAlert.setContentText("Are you sure you want to delete this file?");
-        String deleteQuery = "DELETE FROM project1.document WHERE iddocument = ?;";
-        String deleteInterQuery = "DELETE FROM project1.instrcourdoc WHERE iddocument = ? AND idinstructor = ? AND idcourse = ? ;";
+        String deleteQuery = "DELETE FROM document WHERE iddocument = ?;";
+        String deleteInterQuery = "DELETE FROM instrcourdoc WHERE iddocument = ? AND idinstructor = ? AND idcourse = ? ;";
         Optional<ButtonType> result = deleteAlert.showAndWait();
         if (result.get() == ButtonType.OK){
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
@@ -423,13 +456,14 @@ public class OverviewController{
         //https://www.youtube.com/watch?v=WZGyP57IH6M&list=PL6gx4Cwl9DGBzfXLWLSYVy8EbTdpGbUIG&index=13
         classes.getSelectionModel().selectedItemProperty().addListener( (v, oldvalue, newvalue) -> {
             files.getItems().clear();
-            //System.out.println(newvalue);
             if (newvalue == null){
                 queryFiles(oldvalue);
             }else {
                 queryFiles(newvalue);
             }
             files.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            //SortedList<DocFile> sortedData = new SortedList<>(fileList);
+            //sortedData.comparatorProperty().bind(files.comparatorProperty());
             //files.setItems(FXCollections.observableList(fileList));
             files.setItems(fileList);
         });
@@ -458,7 +492,7 @@ public class OverviewController{
                 String curFileTitle = rs.getString(2);
                 String curFileUploader = rs.getString(3);
                 Date curUploadDate = rs.getDate(4);
-                fileList.add(new DocFile(curFileID,curFileTitle,curFileUploader));
+                fileList.add(new DocFile(curFileID,curFileTitle,curFileUploader, curUploadDate));
                 //fileTemp.add(curFile);
             }
             //System.out.print("This is fileList: ");

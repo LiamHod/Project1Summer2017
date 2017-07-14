@@ -40,9 +40,6 @@ public class AddFileDialogController {
     private String courname;
 
     @FXML
-    private TextField titleTextBox;
-
-    @FXML
     private TextArea descTextBox;
 
     @FXML
@@ -121,9 +118,10 @@ public class AddFileDialogController {
             String newQuery = "INSERT INTO document (title,docdesc,filetype,uploader,uploaddate,docfile) " + "VALUES (?,?,?,?,?,?)";
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 File newfile = new File(fileTextBox.getText());
+                String okFileName = checkFileName(connection,newfile.getName());
                 FileInputStream inputStream = new FileInputStream(newfile);
                 PreparedStatement preparedStatement = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
-                preparedStatement.setString(1,titleTextBox.getText());
+                preparedStatement.setString(1,okFileName);
                 preparedStatement.setString(2,descTextBox.getText());
                 String extension = FilenameUtils.getExtension(fileTextBox.getText());
                 preparedStatement.setString(3,extension);
@@ -154,9 +152,34 @@ public class AddFileDialogController {
 
             }
         }
+    }
 
+    private String checkFileName(Connection connection, String filename) throws SQLException{
+        String fileExistQuery = "SELECT COUNT(*) FROM document,instrcourdoc WHERE instrcourdoc.iddocument = " +
+                "document.iddocument AND instrcourdoc.idinstructor = ? AND instrcourdoc.idcourse = ? AND title = ?";
+        String ext = FilenameUtils.getExtension(filename);
+        PreparedStatement ps = connection.prepareStatement(fileExistQuery);
+        boolean foundName = true;
+        while (foundName){
+            String fileNameWithOutExt = FilenameUtils.removeExtension(filename);
+            ps.setInt(1,instrId);
+            ps.setInt(2,courseId);
+            ps.setString(3,filename);
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            int result = rs.getInt(1);
+            if (result == 0){
+                foundName = false;
+            }else{
+                System.out.println(fileNameWithOutExt + " - Copy" + "." + ext);
+                filename = fileNameWithOutExt + " - Copy" + "." + ext;
+            }
+        }
+        ps.close();
+        return filename;
 
     }
+
     private Integer checkCourse(Connection connection,Integer courseId) throws SQLException{
         //String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
         String checkCourQuery = "SELECT count(*) FROM project1.instrcourdoc where idinstructor = ? AND idcourse = ?;";
@@ -216,9 +239,6 @@ public class AddFileDialogController {
 
     private Boolean checkInputs(){
         String errorMessage = "";
-        if (titleTextBox.getText() == null || titleTextBox.getText().length() == 0){
-            errorMessage += "- Not a valid title.\n";
-        }
         if (fileTextBox.getText() == null || fileTextBox.getText().length() == 0){
             errorMessage += "- Please select a file.\n";
         }
