@@ -96,6 +96,15 @@ public class AddFileDialogController {
         fileChooser.setTitle("Open File to be Uploaded");
         File file = fileChooser.showOpenDialog(currStage);
         if (file != null && file.exists()) {
+            System.out.println(file.length());
+            if (file.length() > 10485760){
+                Alert fileAlert = new Alert(Alert.AlertType.WARNING);
+                fileAlert.setTitle("File too large");
+                fileAlert.setHeaderText(null);
+                fileAlert.setContentText("Please choose a smaller file or zip the current file!");
+                fileAlert.showAndWait();
+                return;
+            }
             try {
                 filePath = file.getCanonicalPath();
                 fileTextBox.setText(filePath);
