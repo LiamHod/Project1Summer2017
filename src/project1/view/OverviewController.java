@@ -346,8 +346,10 @@ public class OverviewController{
         deleteAlert.setTitle("Delete This File?");
         deleteAlert.setHeaderText("You are about to delete this file");
         deleteAlert.setContentText("Are you sure you want to delete this file?");
-        String deleteQuery = "DELETE FROM document WHERE iddocument = ?;";
+        String deleteQuery = "DELETE FROM document WHERE iddocument NOT IN (SELECT iddocument FROM instrcourdoc);";
         String deleteInterQuery = "DELETE FROM instrcourdoc WHERE iddocument = ? AND idinstructor = ? AND idcourse = ? ;";
+        String deleteTagQuery = "DELETE FROM doctag WHERE iddocument = ?";
+        //String deleteTagMain = "DELETE FROM tag WHERE ? NOT IN (SELECT idtag FROM doctag)";
         Optional<ButtonType> result = deleteAlert.showAndWait();
         if (result.get() == ButtonType.OK){
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
@@ -359,12 +361,17 @@ public class OverviewController{
                 ps1.setInt(3,courseId);
                 ps1.executeUpdate();
                 ps1.close();
-                if (docCheck(connection)){
-                    PreparedStatement ps = connection.prepareStatement(deleteQuery);
-                    ps.setInt(1,selFile.getDocid());
-                    ps.executeUpdate();
-                    ps.close();
-                }
+                //if (docCheck(connection)){
+                PreparedStatement ps = connection.prepareStatement(deleteQuery);
+                //ps.setInt(1,selFile.getDocid());
+                ps.executeUpdate();
+                ps.close();
+
+                PreparedStatement psIntTag = connection.prepareStatement(deleteTagQuery);
+                psIntTag.setInt(1,selFile.getDocid());
+                psIntTag.executeUpdate();
+                psIntTag.close();
+                //}
                 connection.commit();
                 connection.setAutoCommit(true);
                 connection.close();

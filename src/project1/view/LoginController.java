@@ -1,5 +1,22 @@
 package project1.view;
 
+//jBCrypt is subject to the following license:
+/*
+ * Copyright (c) 2006 Damien Miller <djm@mindrot.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,9 +27,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.mindrot.jbcrypt.BCrypt;
 import project1.MainApp;
 import project1.model.DBCreds;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
@@ -104,6 +121,7 @@ public class LoginController {
         }
         String email = emailbox.getText();
         String pass = passwordbox.getText();
+        System.out.println(BCrypt.hashpw(pass,BCrypt.gensalt()));
         String newQuery = "SELECT password,idinstructor FROM instructor WHERE email = ?";
         try (Connection connection = DriverManager.getConnection(dbCreds.getUrl(), dbCreds.getUsername(), dbCreds.getPassword())) {
             System.out.println("Database connected!");
@@ -117,7 +135,8 @@ public class LoginController {
                 //DO THE PASSWORD SECURITY CHECK
                 //System.out.println(passcheck);
                 //System.out.println(pass);
-                if (passcheck.equals(pass)) {
+                //String hashed = BCrypt.hashpw(pass,BCrypt.gensalt());
+                if (BCrypt.checkpw(pass, passcheck)) {
                     //System.out.println("HERE");
                     instrid = rs.getInt(2);
                     //System.out.println(instrid);
