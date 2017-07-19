@@ -65,6 +65,9 @@ public class OverviewController{
     @FXML
     private Hyperlink passwordChangeLink;
 
+    @FXML
+    private Hyperlink adminHyperLink;
+
 //    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
 //    private String username = "root";
 //    private String password = "admin";
@@ -80,6 +83,7 @@ public class OverviewController{
     private SplitPane mainLayout;
     private Scene scene;
     private Integer instrId;
+    private Integer admin;
     private List<String> values;
     private DocFile selFile;
     private ObservableList<String> courseList = FXCollections.observableArrayList();
@@ -131,6 +135,27 @@ public class OverviewController{
             changePassController.initValues(instrId);
             changePassStage.setScene(changePassScene);
             changePassStage.showAndWait();
+            loadData();
+            runPage();
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    void handleAdmin(ActionEvent event) {
+        try{
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Admin.fxml"));
+            AnchorPane adminPage = (AnchorPane)fxmlLoader.load();
+            Stage adminStage = new Stage();
+            adminStage.setTitle("Admin");
+            adminStage.initModality(Modality.WINDOW_MODAL);
+            adminStage.initOwner(currentStage);
+            Scene adminScene = new Scene(adminPage);
+            AdminController adminController = fxmlLoader.getController();
+            adminStage.setScene(adminScene);
+            adminStage.showAndWait();
             loadData();
             runPage();
 
@@ -446,11 +471,15 @@ public class OverviewController{
         }
     }
 
-    public void setUserId(Integer userId,String email){
+    public void setUserId(Integer userId,String email, Integer admin){
         //System.out.print("This is in setUserId:   ");
         //System.out.println(userId);
         this.instrId = userId;
         this.email = email;
+        this.admin = admin;
+        if (admin == 1){
+            adminHyperLink.setVisible(true);
+        }
     }
 
     public void initMainScreen(MainApp mainApp,Stage mainGui,Stage currentStage){
@@ -478,12 +507,6 @@ public class OverviewController{
     }
 
     public ObservableList<DocFile> queryFiles(String courseName){
-        List<String> fileTemp = new ArrayList<String>();
-
-//        String fileQueryStr = "SELECT document.iddocument,title,uploader FROM instructor,document,course,courdoc,instrdoc WHERE " +
-//                "instructor.idinstructor = instrdoc.idinstructor AND instrdoc.iddocument = document.iddocument AND " +
-//                "courdoc.iddocument = document.iddocument AND courdoc.idcourse = course.idcourse AND course.courname = ?" +
-//                "AND instructor.idinstructor = ?";
         String fileQueryStr = "SELECT document.iddocument,title,uploader,uploaddate FROM instructor,document,course,instrcourdoc WHERE " +
                 "instructor.idinstructor = instrcourdoc.idinstructor AND instrcourdoc.iddocument = document.iddocument AND " +
                 "instrcourdoc.iddocument = document.iddocument AND instrcourdoc.idcourse = course.idcourse AND course.courname = ?" +
@@ -492,7 +515,6 @@ public class OverviewController{
             PreparedStatement preparedStatement = connection.prepareStatement(fileQueryStr);
             preparedStatement.setString(1, courseName);
             preparedStatement.setInt(2,instrId);
-            //System.out.println(preparedStatement);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()){
                 Integer curFileID = rs.getInt(1);
@@ -500,47 +522,13 @@ public class OverviewController{
                 String curFileUploader = rs.getString(3);
                 Date curUploadDate = rs.getDate(4);
                 fileList.add(new DocFile(curFileID,curFileTitle,curFileUploader, curUploadDate));
-                //fileTemp.add(curFile);
             }
-            //System.out.print("This is fileList: ");
-            //System.out.println(fileList);
             preparedStatement.close();
             connection.close();
             rs.close();
             return fileList;
-            //ObservableList<String> fileList = FXCollections.observableArrayList(fileTemp);
-
-
         }catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }
-
-//    public void loadClasses(){
-//        String newQuery = "SELECT name FROM project1.course,project1.instrcour WHERE idinstructor = ? AND course.idcourse = instrcour.idcourse;";
-//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-//            System.out.println("Database connected!");
-//            PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
-//            preparedStatement.setInt(1, instrId);
-//            ResultSet rs = preparedStatement.executeQuery();
-//            rs.next();
-//            //
-//            //System.out.println(rs.getString(1));
-//            String curClass = rs.getString(1);
-//            System.out.println("Current class::::::");
-//            System.out.println(curClass);
-//            //values.add(curClass); //??????
-//            //}
-//            System.out.print("Course list: ");
-//            System.out.println(courseList);
-//            System.out.print("Classes list: ");
-//            System.out.println(classes);
-//            preparedStatement.close();
-//            connection.close();
-//            rs.close();
-//        }catch (SQLException e) {
-//            throw new IllegalStateException("Cannot connect the database!", e);
-//        }
-//        //classes.setItems(FXCollections.observableList(Arrays.asList("1","2")));
-//    }
 }

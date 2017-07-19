@@ -24,7 +24,12 @@
                   <ListView fx:id="classes" prefHeight="400.0" prefWidth="200.0" />
                   <AnchorPane prefHeight="2.0" prefWidth="175.0">
                      <children>
-                        <Hyperlink fx:id="passwordChangeLink" alignment="CENTER" onAction="#handlePassChange" text="Change Password?" />
+                        <VBox>
+                           <children>
+                              <Hyperlink fx:id="adminHyperLink" onAction="#handleAdmin" text="Admin Page" visible="false" />
+                              <Hyperlink fx:id="passwordChangeLink" alignment="CENTER" onAction="#handlePassChange" text="Change Password?" />
+                           </children>
+                        </VBox>
                      </children>
                   </AnchorPane>
                </children>

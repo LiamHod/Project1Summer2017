@@ -62,7 +62,6 @@ public class LoginController {
 
     }
 
-
     @FXML
     private TextField emailbox;
 
@@ -74,6 +73,9 @@ public class LoginController {
 
     @FXML
     private Hyperlink databaseLink;
+
+    @FXML
+    private Hyperlink adminLoginLink;
 
     @FXML
     private void initialize(){
@@ -122,7 +124,7 @@ public class LoginController {
         String email = emailbox.getText();
         String pass = passwordbox.getText();
         System.out.println(BCrypt.hashpw(pass,BCrypt.gensalt()));
-        String newQuery = "SELECT password,idinstructor FROM instructor WHERE email = ?";
+        String newQuery = "SELECT password,idinstructor,admin FROM instructor WHERE email = ?";
         try (Connection connection = DriverManager.getConnection(dbCreds.getUrl(), dbCreds.getUsername(), dbCreds.getPassword())) {
             System.out.println("Database connected!");
             PreparedStatement preparedStatement = connection.prepareStatement(newQuery, Statement.RETURN_GENERATED_KEYS);
@@ -139,10 +141,11 @@ public class LoginController {
                 if (BCrypt.checkpw(pass, passcheck)) {
                     //System.out.println("HERE");
                     instrid = rs.getInt(2);
+                    int admin = rs.getInt(3);
                     //System.out.println(instrid);
                     Stage oldstage = (Stage) login.getScene().getWindow();
                     oldstage.close();
-                    initMainScreen(email);
+                    initMainScreen(email, admin);
 
 
                 } else {
@@ -183,7 +186,7 @@ public class LoginController {
         alert.setContentText("Your username and/or password is incorrect!");
         alert.showAndWait();
     }
-    public void initMainScreen(String email){
+    public void initMainScreen(String email, int admin){
         //homeScreen = new OverviewController();
         System.out.println(LocalDate.now());
         //homeScreen.setUserId(instrid);
@@ -193,7 +196,7 @@ public class LoginController {
             Parent root = (Parent)fxmlLoader.load();
             scene = new Scene(root);
             OverviewController newController = fxmlLoader.<OverviewController>getController();
-            newController.setUserId(instrid,email);
+            newController.setUserId(instrid,email,admin);
             newController.loadData();
             newController.runPage();
             Stage homeStage = new Stage();
