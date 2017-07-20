@@ -14,14 +14,10 @@
   <items>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
          <children>
-            <VBox layoutX="38.0" layoutY="47.0" prefHeight="398.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <VBox alignment="CENTER" layoutX="38.0" layoutY="47.0" prefHeight="398.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
-                  <HBox alignment="CENTER">
-                     <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Your Folders" />
-                     </children>
-                  </HBox>
-                  <ListView fx:id="classes" prefHeight="400.0" prefWidth="200.0" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Your Folders" />
+                  <ListView fx:id="classes" maxHeight="1.7976931348623157E308" prefHeight="400.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                   <AnchorPane prefHeight="2.0" prefWidth="175.0">
                      <children>
                         <VBox>
@@ -44,7 +40,7 @@
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Files" />
                      </children>
                   </HBox>
-                  <TableView fx:id="files" prefHeight="400.0" prefWidth="200.0">
+                  <TableView fx:id="files" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
                     <columns>
                         <TableColumn fx:id="idColumn" prefWidth="75.0" text="iddocument" visible="false" />
                       <TableColumn fx:id="titleColumn" prefWidth="290.6666259765625" text="Title" />

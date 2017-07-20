@@ -32,6 +32,9 @@ public class AddTagController {
     private Label tagsLeftLabel;
 
     @FXML
+    private Label fileLabel;
+
+    @FXML
     private TableView<Tag> tagTableView;
 
     @FXML
@@ -147,8 +150,9 @@ public class AddTagController {
         populateTagTable();
     }
 
-    public void initValue(Integer docId){
-        this.docId = docId;
+    public void initValue(DocFile selFile){
+        this.docId = selFile.getDocid();
+        fileLabel.setText(selFile.getDocname()+ "'s");
     }
 
     public void populateTagTable(){
