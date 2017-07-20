@@ -24,6 +24,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import org.mindrot.jbcrypt.BCrypt;
 import project1.model.DBCreds;
 
 import java.sql.*;
@@ -62,8 +63,8 @@ public class ChangePassController {
 
     @FXML
     void handleOk(ActionEvent event) {
-        String updateQuery = "UPDATE project1.instructor SET password=? WHERE idinstructor=?;";
-        String getPassQuery = "SELECT password FROM project1.instructor WHERE idinstructor=?";
+        String updateQuery = "UPDATE instructor SET password=? WHERE idinstructor=?;";
+        String getPassQuery = "SELECT password FROM instructor WHERE idinstructor=?";
         if (checkInputs()){
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 PreparedStatement ps = connection.prepareStatement(getPassQuery);
@@ -74,9 +75,12 @@ public class ChangePassController {
                 ps.close();
                 rs.close();
                 //Put jBCrypt Stuff Here
-                if (curPass.equals(oldPassTextBox.getText())){
+                String pass = oldPassTextBox.getText();
+                if (BCrypt.checkpw(pass, curPass)) {
+                //if (curPass.equals(oldPassTextBox.getText())){
                     PreparedStatement ps2 = connection.prepareStatement(updateQuery);
-                    ps2.setString(1,newPassTextBox.getText());
+                    String newPass = BCrypt.hashpw(newPassTextBox.getText(),BCrypt.gensalt());
+                    ps2.setString(1,newPass);
                     ps2.setInt(2,instrId);
                     ps2.executeUpdate();
                     ps2.close();

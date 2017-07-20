@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
+import project1.model.Courses;
 import project1.model.DBCreds;
 
 import java.io.File;
@@ -38,12 +39,16 @@ public class AddFileDialogController {
     private Integer instrId;
     private Integer courseId;
     private String courname;
+    ObservableList<Courses> courseList = FXCollections.observableArrayList();
 
     @FXML
     private TextArea descTextBox;
 
     @FXML
     private Label courseLabel;
+
+    @FXML
+    private ComboBox<Courses> courseComboBox;
 
     @FXML
     private TextArea tagTextBox;
@@ -62,25 +67,27 @@ public class AddFileDialogController {
 
     @FXML
     private void initialize(){
-//        String newQuery = "SELECT courname FROM project1.course;";
-//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-//            List<String> courses = new ArrayList<>();
-//            PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
-//            ResultSet rs = preparedStatement.executeQuery();
-//            while (rs.next()){
-//                String curClass = rs.getString(1);
-//                courses.add(curClass);
-//            }
-//            ObservableList<String> courseList = FXCollections.observableArrayList(courses);
-//            courseComboBox.getItems().clear();
-//            courseComboBox.setItems(courseList);
-//            preparedStatement.close();
-//            connection.close();
-//            rs.close();
-//
-//        }catch (SQLException e) {
-//            throw new IllegalStateException("Cannot connect the database!", e);
-//        }
+        String newQuery = "SELECT * FROM course;";
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            List<Courses> courses = new ArrayList<>();
+            PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()){
+                Integer curClassId = rs.getInt(1);
+                String curClass = rs.getString(2);
+                String curClassFac = rs.getString(3);
+                courseList.add(new Courses(curClassId,curClass,curClassFac));
+            }
+            //ObservableList<Courses> courseList = FXCollections.observableArrayList(courses);
+            courseComboBox.getItems().clear();
+            courseComboBox.setItems(courseList);
+            preparedStatement.close();
+            connection.close();
+            rs.close();
+
+        }catch (SQLException e) {
+            throw new IllegalStateException("Cannot connect the database!", e);
+        }
     }
 
     @FXML
@@ -127,7 +134,8 @@ public class AddFileDialogController {
             String newQuery = "INSERT INTO document (title,docdesc,filetype,uploader,uploaddate,docfile) " + "VALUES (?,?,?,?,?,?)";
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 File newfile = new File(fileTextBox.getText());
-                String okFileName = checkFileName(connection,newfile.getName());
+                Integer courseId = courseComboBox.getSelectionModel().getSelectedItem().getId();
+                String okFileName = checkFileName(connection,newfile.getName(), courseId);
                 FileInputStream inputStream = new FileInputStream(newfile);
                 PreparedStatement preparedStatement = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
                 preparedStatement.setString(1,okFileName);
@@ -163,7 +171,7 @@ public class AddFileDialogController {
         }
     }
 
-    private String checkFileName(Connection connection, String filename) throws SQLException{
+    private String checkFileName(Connection connection, String filename, Integer courseId) throws SQLException{
         String fileExistQuery = "SELECT COUNT(*) FROM document,instrcourdoc WHERE instrcourdoc.iddocument = " +
                 "document.iddocument AND instrcourdoc.idinstructor = ? AND instrcourdoc.idcourse = ? AND title = ?";
         String ext = FilenameUtils.getExtension(filename);
@@ -251,6 +259,9 @@ public class AddFileDialogController {
         if (fileTextBox.getText() == null || fileTextBox.getText().length() == 0){
             errorMessage += "- Please select a file.\n";
         }
+        if (courseComboBox.getSelectionModel().getSelectedItem() == null){
+            errorMessage += "- Please select a course from dropdown box.\n";
+        }
         if (tagTextBox.getText() == null || tagTextBox.getText().length() == 0){
             errorMessage += "- Please enter at least one tag.\n";
         }
@@ -272,8 +283,15 @@ public class AddFileDialogController {
         this.instrId = instrId;
         this.courseId = courID;
         this.courname = courname;
-        courseLabel.setText(courname);
-        courseLabel.setVisible(true);
+//        courseLabel.setText(courname);
+//        courseLabel.setVisible(true);
+        for (Courses curCourse: courseList){
+            if (courseId != null && curCourse.getId() == courseId){
+                courseComboBox.getSelectionModel().select(curCourse);
+
+            }
+        }
+
     }
 
     private void updateTags(Connection connection,Integer docId) throws SQLException{

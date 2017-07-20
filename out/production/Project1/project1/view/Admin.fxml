@@ -145,7 +145,13 @@
                                  <children>
                                     <Label text="First Name" />
                                     <TextField fx:id="firstNameTextBox" promptText="Enter First Name" GridPane.rowIndex="1" />
+                                    <TextField fx:id="lastNameTextBox" promptText="Enter Last Name" GridPane.rowIndex="3" />
                                     <TextField fx:id="facultyInstrTextBox" promptText="Enter Faculty Name" GridPane.rowIndex="5" />
+                                    <Label text="Faculty" GridPane.rowIndex="4" />
+                                    <Label text="Last Name" GridPane.rowIndex="2" />
+                                    <Label text="Password" GridPane.rowIndex="8" />
+                                    <TextField fx:id="emailTextBox" promptText="Enter Email" GridPane.rowIndex="7" />
+                                    <PasswordField fx:id="passBox" promptText="Enter Password" GridPane.rowIndex="9" />
                                     <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="10">
                                        <children>
                                           <Button fx:id="addInstrButton" mnemonicParsing="false" onAction="#handleAddInstr" text="Add &gt;&gt;">
@@ -156,12 +162,6 @@
                                           <Button fx:id="removeInstrButton" mnemonicParsing="false" onAction="#handleRemoveInstr" text="&lt;&lt; Remove" />
                                        </children>
                                     </VBox>
-                                    <Label text="Faculty" GridPane.rowIndex="4" />
-                                    <Label text="Last Name" GridPane.rowIndex="2" />
-                                    <Label text="Password" GridPane.rowIndex="8" />
-                                    <TextField fx:id="lastNameTextBox" promptText="Enter Last Name" GridPane.rowIndex="3" />
-                                    <PasswordField fx:id="passBox" promptText="Enter Password" GridPane.rowIndex="9" />
-                                    <TextField fx:id="emailTextBox" promptText="Enter Email" GridPane.rowIndex="7" />
                                     <Label text="Email" GridPane.rowIndex="6" />
                                  </children>
                                  <GridPane.margin>

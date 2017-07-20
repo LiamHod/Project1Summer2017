@@ -60,7 +60,7 @@ public class AddTagController {
 
     @FXML
     void handleAdd(ActionEvent event) {
-        if (checkInput() && tagsLeft()){
+        if (checkInput() && tagsLeft(true)){
             String totalTags = tagTextBox.getText();
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 Integer tagId;
@@ -172,7 +172,7 @@ public class AddTagController {
         }catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
         }
-        tagsLeft();
+        tagsLeft(false);
     }
 
     private Boolean checkInput(){
@@ -188,7 +188,7 @@ public class AddTagController {
         }
     }
 
-    private Boolean tagsLeft(){
+    private Boolean tagsLeft(boolean alert){
         String checkTagQuery = "SELECT count(*) FROM project1.doctag WHERE iddocument = ?;";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement ps = connection.prepareStatement(checkTagQuery);
@@ -197,13 +197,22 @@ public class AddTagController {
             rs.next();
             Integer totalTags = rs.getInt(1);
             tagsLeft = 10 - totalTags;
-            if (tagsLeft == 0){
+            if (tagsLeft == 0 && alert){
                 Alert tagAlert = new Alert(Alert.AlertType.WARNING);
                 tagAlert.setTitle("No tags remaining");
                 tagAlert.setHeaderText("No tags left to add");
                 tagAlert.setContentText("Please remove tags before adding more");
                 tagAlert.showAndWait();
+                connection.close();
+                ps.close();
+                rs.close();
+                tagsLeftLabel.setText(tagsLeft.toString());
                 return false;
+            }else if (tagsLeft == 0){
+                connection.close();
+                ps.close();
+                rs.close();
+                tagsLeftLabel.setText(tagsLeft.toString());
             }
             connection.close();
             ps.close();
