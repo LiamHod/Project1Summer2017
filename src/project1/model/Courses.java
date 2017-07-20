@@ -53,6 +53,11 @@ public class Courses {
     public void setFaculty(String faculty) {
         this.faculty.set(faculty);
     }
+
+    @Override
+    public String toString() {
+        return name.get();
+    }
 }
 
 

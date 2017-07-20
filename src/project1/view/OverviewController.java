@@ -154,6 +154,7 @@ public class OverviewController{
             adminStage.initOwner(currentStage);
             Scene adminScene = new Scene(adminPage);
             AdminController adminController = fxmlLoader.getController();
+            adminController.initId(instrId);
             adminStage.setScene(adminScene);
             adminStage.showAndWait();
             loadData();
@@ -216,38 +217,42 @@ public class OverviewController{
     }
 
     public void openAddFile(){
-        if (classes.getSelectionModel().getSelectedItem() != null) {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFile.fxml"));
-                AnchorPane addFilePage = (AnchorPane) fxmlLoader.load();
-                Stage fileStage = new Stage();
-                fileStage.setTitle("Add File");
-                fileStage.initModality(Modality.WINDOW_MODAL);
-                fileStage.initOwner(currentStage);
-                Scene fileScene = new Scene(addFilePage);
-                AddFileDialogController fileController = fxmlLoader.getController();
-                Integer courID;
+        //if (classes.getSelectionModel().getSelectedItem() != null) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFile.fxml"));
+            AnchorPane addFilePage = (AnchorPane) fxmlLoader.load();
+            Stage fileStage = new Stage();
+            fileStage.setTitle("Add File");
+            fileStage.initModality(Modality.WINDOW_MODAL);
+            fileStage.initOwner(currentStage);
+            Scene fileScene = new Scene(addFilePage);
+            AddFileDialogController fileController = fxmlLoader.getController();
+            Integer courID = null;
+            System.out.println(classes.getSelectionModel().getSelectedItem());
+            if (classes.getSelectionModel().getSelectedItem() != null) {
                 try (Connection connection = DriverManager.getConnection(url, username, password)) {
                     courID = getCourseId(connection);
                 } catch (SQLException e) {
                     throw new IllegalStateException("Cannot connect the database!", e);
                 }
-                fileController.setEmailandID(email, instrId, courID, classes.getSelectionModel().getSelectedItem());
-                fileStage.setScene(fileScene);
-                fileStage.showAndWait();
-                loadData();
-                runPage();
-
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-        }else{
-            Alert noClassSel = new Alert(Alert.AlertType.INFORMATION);
-            noClassSel.setTitle("No Class Selected");
-            noClassSel.setHeaderText(null);
-            noClassSel.setContentText("Please select a class first");
-            noClassSel.showAndWait();
+            System.out.println("courID = "+ courID);
+            fileController.setEmailandID(email, instrId, courID, classes.getSelectionModel().getSelectedItem());
+            fileStage.setScene(fileScene);
+            fileStage.showAndWait();
+            loadData();
+            runPage();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+//        }else{
+//            Alert noClassSel = new Alert(Alert.AlertType.INFORMATION);
+//            noClassSel.setTitle("No Class Selected");
+//            noClassSel.setHeaderText(null);
+//            noClassSel.setContentText("Please select a class first");
+//            noClassSel.showAndWait();
+//        }
     }
 
     public void downloadFile(){
