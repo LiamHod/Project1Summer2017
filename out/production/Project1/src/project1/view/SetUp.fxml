@@ -38,8 +38,6 @@
                   <Insets left="20.0" right="20.0" />
                </GridPane.margin>
             </TextField>
-            <Button fx:id="testConnButton" mnemonicParsing="false" onAction="#handleTest" text="Test Connection" GridPane.rowIndex="3" />
-            <Label fx:id="testConnLabel" text="Label" visible="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <PasswordField fx:id="dbPassBox" promptText="Enter database password" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <opaqueInsets>
                   <Insets />
@@ -48,6 +46,8 @@
                   <Insets left="20.0" right="20.0" />
                </GridPane.margin>
             </PasswordField>
+            <Button fx:id="testConnButton" mnemonicParsing="false" onAction="#handleTest" text="Test Connection" GridPane.rowIndex="3" />
+            <Label fx:id="testConnLabel" text="Label" visible="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
       <HBox layoutX="208.0" layoutY="261.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">

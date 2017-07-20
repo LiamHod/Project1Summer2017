@@ -33,7 +33,7 @@
                      <Button fx:id="fileButton" mnemonicParsing="false" onAction="#handleChooseFile" prefHeight="25.0" prefWidth="102.0" text="Choose file" />
                  </children>
              </HBox>
-             <TextArea fx:id="descTextBox" prefHeight="200.0" prefWidth="200.0" promptText="Enter description (Optional)" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+             <TextArea fx:id="descTextBox" prefHeight="200.0" prefWidth="200.0" promptText="Enter description (Optional)" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="Description" GridPane.rowIndex="1" />
             <Label text="Course" GridPane.rowIndex="2" />
             <Label text="Tags (Max 10 Tags)&#10;*Seperate each tag&#10;with a space" wrapText="true" GridPane.rowIndex="3" />

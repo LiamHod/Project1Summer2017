@@ -340,7 +340,7 @@ public class OverviewController{
             addTagStage.initOwner(currentStage);
             Scene addTagScene = new Scene(addTagPage);
             AddTagController addTagController = fxmlLoader.getController();
-            addTagController.initValue(selFile.getDocid());
+            addTagController.initValue(selFile);
             addTagController.populateTagTable();
             addTagStage.setScene(addTagScene);
             addTagStage.showAndWait();
