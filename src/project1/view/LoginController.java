@@ -36,14 +36,9 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.Properties;
 
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Node;
-
 
 public class LoginController {
 
-//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-//    private String username = "root";
-//    private String password = "admin";
     private String tempemail = "test@gmail.com";
     private String temppass = "password";
     private Integer instrid;
@@ -123,7 +118,6 @@ public class LoginController {
         }
         String email = emailbox.getText();
         String pass = passwordbox.getText();
-        System.out.println(BCrypt.hashpw(pass,BCrypt.gensalt()));
         String newQuery = "SELECT password,idinstructor,admin FROM instructor WHERE email = ?";
         try (Connection connection = DriverManager.getConnection(dbCreds.getUrl(), dbCreds.getUsername(), dbCreds.getPassword())) {
             System.out.println("Database connected!");
@@ -134,15 +128,9 @@ public class LoginController {
             if (rs.next()) {
 
                 String passcheck = rs.getString(1);
-                //DO THE PASSWORD SECURITY CHECK
-                //System.out.println(passcheck);
-                //System.out.println(pass);
-                //String hashed = BCrypt.hashpw(pass,BCrypt.gensalt());
                 if (BCrypt.checkpw(pass, passcheck)) {
-                    //System.out.println("HERE");
                     instrid = rs.getInt(2);
                     int admin = rs.getInt(3);
-                    //System.out.println(instrid);
                     Stage oldstage = (Stage) login.getScene().getWindow();
                     oldstage.close();
                     initMainScreen(email, admin);
@@ -179,7 +167,6 @@ public class LoginController {
     }
 
     public void loginFailed(){
-        //System.out.println("Password incorrect!");
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Login Failed");
         alert.setHeaderText("Login Failed");
@@ -187,10 +174,6 @@ public class LoginController {
         alert.showAndWait();
     }
     public void initMainScreen(String email, int admin){
-        //homeScreen = new OverviewController();
-        System.out.println(LocalDate.now());
-        //homeScreen.setUserId(instrid);
-        //homeScreen.initMainScreen(mainApp,mainGui,instrid);
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Overview.fxml"));
             Parent root = (Parent)fxmlLoader.load();
@@ -207,8 +190,5 @@ public class LoginController {
         }catch (IOException e){
             e.printStackTrace();
         }
-
-        //loadClasses();
-
     }
 }

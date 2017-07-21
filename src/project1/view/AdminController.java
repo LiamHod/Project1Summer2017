@@ -17,8 +17,6 @@ package project1.view;
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -31,7 +29,6 @@ import org.mindrot.jbcrypt.BCrypt;
 import project1.model.Courses;
 import project1.model.DBCreds;
 import project1.model.Instructor;
-
 import java.sql.*;
 import java.util.Optional;
 
@@ -45,9 +42,6 @@ public class AdminController {
 
     @FXML
     private TableView<Courses> courseTableView;
-
-//    @FXML
-//    private TableColumn<Courses, Integer> courseIdColumn;
 
     @FXML
     private TableColumn<Courses, String> courseNameColumn;
@@ -126,17 +120,13 @@ public class AdminController {
 
     @FXML
     public void initialize(){
-        //idColumn.setCellValueFactory(cellData -> cellData.getValue().docidProperty().asObject());
-        //courseIdColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
         courseNameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         facultyColumn.setCellValueFactory(cellData -> cellData.getValue().facultyProperty());
 
-        //instrIdColumn.setCellValueFactory(cellData -> cellData.getValue().instrIdProperty().asObject());
         firstNameColumn.setCellValueFactory(cellData -> cellData.getValue().firstNameProperty());
         lastNameColumn.setCellValueFactory(cellData -> cellData.getValue().lastNameProperty());
         emailColumn.setCellValueFactory(cellData -> cellData.getValue().emailProperty());
         facultyInstrColumn.setCellValueFactory(cellData -> cellData.getValue().facultyProperty());
-        //passwordColumn.setCellValueFactory(cellData -> cellData.getValue().passwordProperty());
         adminColumn.setCellValueFactory(cellData -> cellData.getValue().adminProperty().asObject());
 
         loadCourse();
@@ -312,23 +302,9 @@ public class AdminController {
         return newString;
     }
 
-//    private boolean checkEmail(){
-//        String curEmail = instructorTableView.getSelectionModel().getSelectedItem().getEmail();
-//        String emailExistQuery = "SELECT count(*) FROM instructor WHERE email = ?";
-//        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-//            PreparedStatement ps = connection.prepareStatement(emailExistQuery);
-//
-//        } catch (SQLException e) {
-//            throw new IllegalStateException("Cannot connect the database!", e);
-//        }
-//    }
-
     private void loadCourse(){
-//        courseTableView.getSelectionModel().selectedItemProperty().addListener( (v, oldValue, newValue) -> {
-//
-//        });
         courseTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        String loadCourseQuery = "SELECT * FROM course";
+        String loadCourseQuery = "SELECT * FROM course ORDER BY courname";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement ps = connection.prepareStatement(loadCourseQuery);
             ResultSet rs = ps.executeQuery();
@@ -354,7 +330,7 @@ public class AdminController {
 
     private void loadInstructors(){
         instructorTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        String loadInstrQuery = "SELECT * FROM instructor WHERE idinstructor != ?";
+        String loadInstrQuery = "SELECT * FROM instructor WHERE idinstructor != ? ORDER BY lname";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement ps = connection.prepareStatement(loadInstrQuery);
             ps.setInt(1,instrId);

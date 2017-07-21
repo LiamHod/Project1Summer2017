@@ -14,9 +14,6 @@ import java.sql.*;
 
 public class AddTagController {
 
-//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-//    private String username = "root";
-//    private String password = "admin";
     private DBCreds dbCreds = DBCreds.INSTANCE;
     private String url = dbCreds.getUrl();
     private String username = dbCreds.getUsername();
@@ -157,7 +154,7 @@ public class AddTagController {
 
     public void populateTagTable(){
         tagTableView.getItems().clear();
-        String newQuery = "SELECT doctag.idtag,tagname FROM project1.tag,project1.doctag WHERE iddocument = ? AND tag.idtag = doctag.idtag;";
+        String newQuery = "SELECT doctag.idtag,tagname FROM tag,doctag WHERE iddocument = ? AND tag.idtag = doctag.idtag;";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement ps = connection.prepareStatement(newQuery);
             ps.setInt(1,docId);
@@ -166,7 +163,6 @@ public class AddTagController {
                 Integer curTagID = rs.getInt(1);
                 String curTagName = rs.getString(2);
                 tagList.add(new Tag(curTagID,curTagName));
-                //fileTemp.add(curFile);
             }
             ps.close();
             rs.close();
@@ -193,7 +189,7 @@ public class AddTagController {
     }
 
     private Boolean tagsLeft(boolean alert){
-        String checkTagQuery = "SELECT count(*) FROM project1.doctag WHERE iddocument = ?;";
+        String checkTagQuery = "SELECT count(*) FROM doctag WHERE iddocument = ?;";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement ps = connection.prepareStatement(checkTagQuery);
             ps.setInt(1,docId);

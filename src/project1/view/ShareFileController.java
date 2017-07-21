@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import project1.model.Courses;
 import project1.model.DBCreds;
 import project1.model.DocFile;
 
@@ -20,9 +21,6 @@ public class ShareFileController {
     private String docName;
     private Integer resipID;
     private Integer courseId;
-//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-//    private String username = "root";
-//    private String password = "admin";
     private DBCreds dbCreds = DBCreds.INSTANCE;
     private String url = dbCreds.getUrl();
     private String username = dbCreds.getUsername();
@@ -56,34 +54,13 @@ public class ShareFileController {
         if (checkInput()) {
             System.out.println("Valid email");
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
-                Boolean hasCourse = checkIfCourse(connection);
-//                String instrDocQuery = "INSERT INTO instrdoc (idinstructor,iddocument) " + "VALUES (?,?)";
-//                String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
-//                connection.setAutoCommit(false);
-//                PreparedStatement psID = connection.prepareStatement(instrDocQuery);
-//                psID.setInt(1,resipID);
-//                psID.setInt(2,docId);
-//                psID.executeUpdate();
-//
-//                if (! hasCourse) {
-//                    PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
-//                    psIC.setInt(1, resipID);
-//                    psIC.setInt(2, courseId);
-//                    psIC.executeUpdate();
-//                    psIC.close();
-//                }
-//                psID.close();
-//                connection.commit();
-//                connection.setAutoCommit(true);
-                if (! hasCourse) {
-                    String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
-                    PreparedStatement psICD = connection.prepareStatement(instrCourDocQuery);
-                    psICD.setInt(1, resipID);
-                    psICD.setInt(2, courseId);
-                    psICD.setInt(3, docId);
-                    psICD.executeUpdate();
-                    successAlert();
-                }
+                String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
+                PreparedStatement psICD = connection.prepareStatement(instrCourDocQuery);
+                psICD.setInt(1, resipID);
+                psICD.setInt(2, courseId);
+                psICD.setInt(3, docId);
+                psICD.executeUpdate();
+                successAlert();
                 connection.close();
                 Stage currStage = (Stage) okButton.getScene().getWindow();
                 currStage.close();
@@ -92,28 +69,6 @@ public class ShareFileController {
 
             }
         }
-    }
-
-    private Boolean checkIfCourse(Connection connection) throws SQLException{
-        String courseQuery = "SELECT idcourse FROM project1.course WHERE courname = ?";
-        PreparedStatement ps = connection.prepareStatement(courseQuery);
-        ps.setString(1,courseName);
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        courseId = rs.getInt(1);
-        //THIS IS OLD STUFF THAT WORKS IF NEEDING TO REVERT
-        //String courseCheckQuery = "SELECT count(*) FROM project1.instrcour WHERE idinstructor = ? AND idcourse = ?;";
-        String courseCheckQuery = "SELECT count(*) FROM project1.instrcourdoc WHERE idinstructor = ? AND idcourse = ? AND iddocument = ?;";
-        ps = connection.prepareStatement(courseCheckQuery);
-        ps.setInt(1,resipID);
-        ps.setInt(2,courseId);
-        ps.setInt(3,docId);
-        rs = ps.executeQuery();
-        rs.next();
-        Integer hasCourse = rs.getInt(1);
-        ps.close();
-        rs.close();
-        return (hasCourse > 0);
     }
 
     private Boolean checkInput(){
@@ -126,12 +81,8 @@ public class ShareFileController {
             return false;
         }
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            //String emailCheckQuery = "SELECT count(*) FROM project1.instructor WHERE email = ? AND idinstructor != ?;";
-            String alreadyCheckQuery = "SELECT count(*) FROM project1.instrcourdoc WHERE idinstructor = ? AND iddocument = ?;";
-            //OLD GOOD STUFF BELOW
-            //String alreadyCheckQuery = "SELECT count(*) FROM project1.instrdoc WHERE idinstructor = ? AND iddocument = ?;";
-            String getIdQuery = "SELECT idinstructor FROM project1.instructor WHERE email = ?";
-            //PreparedStatement emailCheck = connection.prepareStatement(emailCheckQuery);
+            String alreadyCheckQuery = "SELECT count(*) FROM instrcourdoc WHERE idinstructor = ? AND idcourse = ? AND iddocument = ?;";
+            String getIdQuery = "SELECT idinstructor FROM instructor WHERE email = ?";
             PreparedStatement alreadyCheck = connection.prepareStatement(alreadyCheckQuery);
             PreparedStatement getIdPS = connection.prepareStatement(getIdQuery);
 
@@ -147,25 +98,19 @@ public class ShareFileController {
             getIdPS.close();
 
             alreadyCheck.setInt(1,resipID);
-            alreadyCheck.setInt(2,docId);
+            alreadyCheck.setInt(2,courseId);
+            alreadyCheck.setInt(3,docId);
             ResultSet rsAL = alreadyCheck.executeQuery();
             rsAL.next();
             Integer haveFile = rsAL.getInt(1);
             rsAL.close();
             alreadyCheck.close();
 
-            //emailCheck.setString(1,emailTextBox.getText());
-            //emailCheck.setInt(2,instrId);
-            //ResultSet rs = emailCheck.executeQuery();
-            //rs.next();
-            //Integer results = rs.getInt(1);
             rsAL.close();
             rsID.close();
             getIdPS.close();
             alreadyCheck.close();
             connection.close();
-            //emailCheck.close();
-            //rs.close();
 
             if(haveFile != 0){
                 alreadyAlert();
@@ -201,16 +146,17 @@ public class ShareFileController {
         Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
         successAlert.setTitle("Share Completed");
         successAlert.setHeaderText(null);
-        successAlert.setContentText("- Your file was successfully shared.");
+        successAlert.setContentText("Your file was successfully shared.");
         successAlert.showAndWait();
     }
 
 
-    public void initFileIdAndUserId(DocFile selFile, Integer instrId, String courseName){
+    public void initFileIdAndUserId(DocFile selFile, Integer instrId, Courses curCourse){
         this.docId = selFile.getDocid();
         this.docName = selFile.getDocname();
         this.instrId = instrId;
-        this.courseName = courseName;
+        this.courseName = curCourse.getName();
+        this.courseId = curCourse.getId();
         fileNameLabel.setText(docName);
         fileNameLabel.setVisible(true);
     }
