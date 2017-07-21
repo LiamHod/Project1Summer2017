@@ -22,7 +22,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.mindrot.jbcrypt.BCrypt;
 import project1.model.DBCreds;
@@ -31,9 +30,6 @@ import java.sql.*;
 
 public class ChangePassController {
 
-//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-//    private String username = "root";
-//    private String password = "admin";
     private DBCreds dbCreds = DBCreds.INSTANCE;
     private String url = dbCreds.getUrl();
     private String username = dbCreds.getUsername();
@@ -74,10 +70,8 @@ public class ChangePassController {
                 String curPass = rs.getString(1);
                 ps.close();
                 rs.close();
-                //Put jBCrypt Stuff Here
                 String pass = oldPassTextBox.getText();
                 if (BCrypt.checkpw(pass, curPass)) {
-                //if (curPass.equals(oldPassTextBox.getText())){
                     PreparedStatement ps2 = connection.prepareStatement(updateQuery);
                     String newPass = BCrypt.hashpw(newPassTextBox.getText(),BCrypt.gensalt());
                     ps2.setString(1,newPass);
@@ -89,7 +83,6 @@ public class ChangePassController {
                     successAlert.setHeaderText(null);
                     successAlert.setContentText("Your password was updated successfully!");
                     successAlert.showAndWait();
-                    //Replace Above
                 }else{
                     Alert inputAlert = new Alert(Alert.AlertType.WARNING);
                     inputAlert.setTitle("Incorrect Password");

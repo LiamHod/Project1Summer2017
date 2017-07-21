@@ -13,6 +13,7 @@ import org.apache.commons.io.FilenameUtils;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import project1.model.Courses;
 import project1.model.DBCreds;
 import project1.model.DocFile;
 
@@ -25,7 +26,7 @@ public class RenameController {
     private String username = dbCreds.getUsername();
     private String password = dbCreds.getPassword();
     private Integer instrId;
-    private String currClass;
+    private String currClassName;
     private Integer courseId;
     private Integer docId;
     private String docName;
@@ -49,7 +50,6 @@ public class RenameController {
     void handleRename(ActionEvent event) {
         if (isValid()) {
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
-                courseId = getCourseId(currClass,connection);
                 String curExt = FilenameUtils.getExtension(docName);
                 String newFileName = checkFileName(connection, renameTextBox.getText()+"."+curExt);
                 connection.setAutoCommit(false);
@@ -86,9 +86,10 @@ public class RenameController {
         currStage.close();
     }
 
-    public void initValues(Integer instrId, String currClass, DocFile selFile){
+    public void initValues(Integer instrId, Courses currClass, DocFile selFile){
         this.instrId = instrId;
-        this.currClass = currClass;
+        this.currClassName = currClass.getName();
+        this.courseId = currClass.getId();
         this.docId = selFile.getDocid();
         this.docName = selFile.getDocname();
         renameTextBox.setText(FilenameUtils.getBaseName(selFile.getDocname()));
@@ -108,8 +109,10 @@ public class RenameController {
             ResultSet rs = ps.executeQuery();
             rs.next();
             int result = rs.getInt(1);
-            if (result == 0){
+            if (result == 0) {
                 foundName = false;
+            }else if(ext == null){
+                filename = fileNameWithOutExt + " - Copy";
             }else{
                 System.out.println(fileNameWithOutExt + " - Copy" + "." + ext);
                 filename = fileNameWithOutExt + " - Copy" + "." + ext;
@@ -118,18 +121,6 @@ public class RenameController {
         ps.close();
         return filename;
 
-    }
-
-    private Integer getCourseId(String courseName,Connection connection) throws SQLException {
-        String courseQuery = "SELECT idcourse FROM project1.course WHERE courname = ?";
-        PreparedStatement ps = connection.prepareStatement(courseQuery);
-        ps.setString(1, courseName);
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        Integer courseId = rs.getInt(1);
-        ps.close();
-        rs.close();
-        return courseId;
     }
 
     private void transferTags(Connection connection,Integer oldDocId, Integer newDocId) throws SQLException{

@@ -16,21 +16,16 @@ import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
 import project1.model.Courses;
 import project1.model.DBCreds;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class AddFileDialogController {
 
     private String filePath;
-//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-//    private String username = "root";
-//    private String password = "admin";
     private DBCreds dbCreds = DBCreds.INSTANCE;
     private String url = dbCreds.getUrl();
     private String username = dbCreds.getUsername();
@@ -43,9 +38,6 @@ public class AddFileDialogController {
 
     @FXML
     private TextArea descTextBox;
-
-    @FXML
-    private Label courseLabel;
 
     @FXML
     private ComboBox<Courses> courseComboBox;
@@ -67,9 +59,8 @@ public class AddFileDialogController {
 
     @FXML
     private void initialize(){
-        String newQuery = "SELECT * FROM course;";
+        String newQuery = "SELECT * FROM course ORDER BY courname;";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            List<Courses> courses = new ArrayList<>();
             PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()){
@@ -78,7 +69,6 @@ public class AddFileDialogController {
                 String curClassFac = rs.getString(3);
                 courseList.add(new Courses(curClassId,curClass,curClassFac));
             }
-            //ObservableList<Courses> courseList = FXCollections.observableArrayList(courses);
             courseComboBox.getItems().clear();
             courseComboBox.setItems(courseList);
             preparedStatement.close();
@@ -144,7 +134,6 @@ public class AddFileDialogController {
                 preparedStatement.setString(3,extension);
                 preparedStatement.setString(4,email);
                 preparedStatement.setDate(5, java.sql.Date.valueOf(LocalDate.now()));
-                //preparedStatement.setString(6,courseComboBox.getSelectionModel().getSelectedItem());
                 preparedStatement.setBlob(6,inputStream);
                 preparedStatement.executeUpdate();
                 ResultSet keys = preparedStatement.getGeneratedKeys();
@@ -154,10 +143,8 @@ public class AddFileDialogController {
                 keys.close();
                 Stage currStage = (Stage) okButton.getScene().getWindow();
                 currStage.close();
-                //Integer courseId = getCourseId(courseComboBox.getSelectionModel().getSelectedItem(),connection);
-                Integer results = checkCourse(connection,courseId);
                 connection.setAutoCommit(false);
-                updateIntermediateTable(returnedId,courseId,connection,results);
+                updateIntermediateTable(returnedId,courseId,connection);
                 connection.commit();
                 connection.setAutoCommit(true);
                 updateTags(connection,returnedId);
@@ -197,61 +184,14 @@ public class AddFileDialogController {
 
     }
 
-    private Integer checkCourse(Connection connection,Integer courseId) throws SQLException{
-        //String checkCourQuery = "SELECT count(*) FROM project1.instrcour where idinstructor = ? AND idcourse = ?;";
-        String checkCourQuery = "SELECT count(*) FROM project1.instrcourdoc where idinstructor = ? AND idcourse = ?;";
-        PreparedStatement psCCheck = connection.prepareStatement(checkCourQuery);
-        psCCheck.setInt(1,instrId);
-        psCCheck.setInt(2,courseId);
-        ResultSet rs = psCCheck.executeQuery();
-        rs.next();
-        Integer results = rs.getInt(1);
-        System.out.println(results);
-        return results;
-    }
-
-    private Integer getCourseId(String courseNum,Connection connection) throws SQLException{
-        String courseQuery = "SELECT idcourse FROM project1.course WHERE courname = ?";
-        PreparedStatement ps = connection.prepareStatement(courseQuery);
-        ps.setString(1,courseNum);
-        ResultSet rs  = ps.executeQuery();
-        rs.next();
-        Integer courseId = rs.getInt(1);
-        ps.close();
-        rs.close();
-        return courseId;
-
-    }
-
-    private void updateIntermediateTable(Integer docId,Integer courseId, Connection connection,Integer results) throws SQLException{
-//        String courDocQuery = "INSERT INTO courdoc (idcourse,iddocument) " + "VALUES (?,?)";
-//        String instrDocQuery = "INSERT INTO instrdoc (idinstructor,iddocument) " + "VALUES (?,?)";
-//        String instrCourQuery = "INSERT INTO instrcour (idinstructor,idcourse) " + "VALUES (?,?)";
-//        PreparedStatement psCD = connection.prepareStatement(courDocQuery);
-//        psCD.setInt(1,courseId);
-//        psCD.setInt(2,docId);
-//        psCD.executeUpdate();
-//
-//        PreparedStatement psID = connection.prepareStatement(instrDocQuery);
-//        psID.setInt(1,instrId);
-//        psID.setInt(2,docId);
-//        psID.executeUpdate();
-//
-//        if (results <= 0) {
-//            PreparedStatement psIC = connection.prepareStatement(instrCourQuery);
-//            psIC.setInt(1, instrId);
-//            psIC.setInt(2, courseId);
-//            psIC.executeUpdate();
-//            psIC.close();
-//        }
-//        psCD.close();
-//        psID.close();
+    private void updateIntermediateTable(Integer docId,Integer courseId, Connection connection) throws SQLException{
         String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
         PreparedStatement psICD = connection.prepareStatement(instrCourDocQuery);
         psICD.setInt(1,instrId);
         psICD.setInt(2,courseId);
         psICD.setInt(3,docId);
         psICD.executeUpdate();
+        psICD.close();
     }
 
     private Boolean checkInputs(){
@@ -278,13 +218,13 @@ public class AddFileDialogController {
         }
     }
 
-    public void setEmailandID(String email,Integer instrId, Integer courID, String courname){
+    public void setEmailandID(String email,Integer instrId, Courses selCourse){
         this.email = email;
         this.instrId = instrId;
-        this.courseId = courID;
-        this.courname = courname;
-//        courseLabel.setText(courname);
-//        courseLabel.setVisible(true);
+        if (selCourse != null) {
+            this.courseId = selCourse.getId();
+            this.courname = selCourse.getName();
+        }
         for (Courses curCourse: courseList){
             if (courseId != null && curCourse.getId() == courseId){
                 courseComboBox.getSelectionModel().select(curCourse);

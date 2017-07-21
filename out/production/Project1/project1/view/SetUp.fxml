@@ -52,7 +52,7 @@
       </GridPane>
       <HBox layoutX="208.0" layoutY="261.0" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0">
          <children>
-            <Button fx:id="okButton" mnemonicParsing="false" onAction="#handleOk" prefHeight="25.0" prefWidth="84.0" text="OK">
+            <Button fx:id="okButton" mnemonicParsing="false" onAction="#handleOk" prefHeight="25.0" prefWidth="84.0" text="Save">
                <HBox.margin>
                   <Insets right="10.0" />
                </HBox.margin>

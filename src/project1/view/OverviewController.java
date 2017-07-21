@@ -7,18 +7,13 @@ package project1.view;
 //        The Apache Software Foundation (http://www.apache.org/).
 
 
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import org.apache.commons.io.FilenameUtils;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -27,17 +22,14 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import project1.MainApp;
-import project1.model.DBConn;
+import project1.model.Courses;
 import project1.model.DBCreds;
 import project1.model.DocFile;
-import sample.Controller;
-import sun.rmi.runtime.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -45,7 +37,7 @@ import java.util.*;
 public class OverviewController{
 
     @FXML
-    private ListView<String> classes;
+    private ListView<Courses> classes;
 
     @FXML
     private TableView<DocFile> files;
@@ -68,9 +60,12 @@ public class OverviewController{
     @FXML
     private Hyperlink adminHyperLink;
 
-//    private String url = "jdbc:mysql://localhost:3306/project1?useSSL=false";
-//    private String username = "root";
-//    private String password = "admin";
+    @FXML
+    private Button addFileButton;
+
+    @FXML
+    private Button searchFilesButton;
+
     private DBCreds dbCreds = DBCreds.INSTANCE;
     private String url = dbCreds.getUrl();
     private String username = dbCreds.getUsername();
@@ -84,9 +79,9 @@ public class OverviewController{
     private Scene scene;
     private Integer instrId;
     private Integer admin;
-    private List<String> values;
+    private Courses selCourse;
     private DocFile selFile;
-    private ObservableList<String> courseList = FXCollections.observableArrayList();
+    private ObservableList<Courses> courseList = FXCollections.observableArrayList();
     private ObservableList<DocFile> fileList = FXCollections.observableArrayList();
 
 
@@ -102,12 +97,13 @@ public class OverviewController{
         uploadDateColumn.setCellValueFactory(cellData -> cellData.getValue().docdateaddedProperty());
         ContextMenu rightClickMenu = fileContextMenu();
         ContextMenu addFileMenu = notfileContextMenu();
+        addFileButton.setOnAction(e -> openAddFile());
+        searchFilesButton.setOnAction(e -> searchFiles());
 
         files.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 if(event.getButton() == MouseButton.SECONDARY && (selFile = files.getSelectionModel().getSelectedItem()) != null){
-                    //rightClickMenu.show(files,event.getScreenX(),event.getScreenY());
                     System.out.println(selFile);
                     files.getSelectionModel().clearSelection();
                     files.setContextMenu(rightClickMenu);
@@ -165,7 +161,7 @@ public class OverviewController{
         }
     }
 
-    public ContextMenu fileContextMenu(){
+    private ContextMenu fileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem renameMenu = new MenuItem("Rename...");
         MenuItem downloadMenu = new MenuItem("Download...");
@@ -184,7 +180,7 @@ public class OverviewController{
         return rightClickMenu;
     }
 
-    public ContextMenu notfileContextMenu(){
+    private ContextMenu notfileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem addfileMenu = new MenuItem("Add File...");
         MenuItem searchMenu = new MenuItem("Search Files...");
@@ -195,7 +191,7 @@ public class OverviewController{
         return rightClickMenu;
     }
 
-    public void renameFile(){
+    private void renameFile(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Rename.fxml"));
             AnchorPane renameFilePage = (AnchorPane)fxmlLoader.load();
@@ -205,7 +201,7 @@ public class OverviewController{
             renameStage.initOwner(currentStage);
             Scene renameScene = new Scene(renameFilePage);
             RenameController renameController = fxmlLoader.getController();
-            renameController.initValues(instrId,classes.getSelectionModel().getSelectedItem(),selFile);
+            renameController.initValues(instrId,selCourse,selFile);
             renameStage.setScene(renameScene);
             renameStage.showAndWait();
             loadData();
@@ -216,8 +212,7 @@ public class OverviewController{
         }
     }
 
-    public void openAddFile(){
-        //if (classes.getSelectionModel().getSelectedItem() != null) {
+    private void openAddFile(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFile.fxml"));
             AnchorPane addFilePage = (AnchorPane) fxmlLoader.load();
@@ -227,17 +222,7 @@ public class OverviewController{
             fileStage.initOwner(currentStage);
             Scene fileScene = new Scene(addFilePage);
             AddFileDialogController fileController = fxmlLoader.getController();
-            Integer courID = null;
-            System.out.println(classes.getSelectionModel().getSelectedItem());
-            if (classes.getSelectionModel().getSelectedItem() != null) {
-                try (Connection connection = DriverManager.getConnection(url, username, password)) {
-                    courID = getCourseId(connection);
-                } catch (SQLException e) {
-                    throw new IllegalStateException("Cannot connect the database!", e);
-                }
-            }
-            System.out.println("courID = "+ courID);
-            fileController.setEmailandID(email, instrId, courID, classes.getSelectionModel().getSelectedItem());
+            fileController.setEmailandID(email, instrId, selCourse);
             fileStage.setScene(fileScene);
             fileStage.showAndWait();
             loadData();
@@ -246,19 +231,10 @@ public class OverviewController{
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        }else{
-//            Alert noClassSel = new Alert(Alert.AlertType.INFORMATION);
-//            noClassSel.setTitle("No Class Selected");
-//            noClassSel.setHeaderText(null);
-//            noClassSel.setContentText("Please select a class first");
-//            noClassSel.showAndWait();
-//        }
     }
 
-    public void downloadFile(){
+    private void downloadFile(){
         FileChooser fileChooser = new FileChooser();
-        //FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-        //fileChooser.getExtensionFilters().add(extFilter);
         fileChooser.setInitialFileName(selFile.getDocname());
         File file = fileChooser.showSaveDialog(currentStage);
         if(file != null) {
@@ -287,7 +263,7 @@ public class OverviewController{
         }
     }
 
-    public void copyFile(){
+    private void copyFile(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("CopyFile.fxml"));
             AnchorPane copyFilePage = (AnchorPane)fxmlLoader.load();
@@ -297,7 +273,7 @@ public class OverviewController{
             copyStage.initOwner(currentStage);
             Scene copyScene = new Scene(copyFilePage);
             CopyFileController copyFileController = fxmlLoader.getController();
-            copyFileController.setIdAndCurrCour(instrId,classes.getSelectionModel().getSelectedItem(),selFile);
+            copyFileController.setIdAndCurrCour(instrId,selCourse,selFile);
             copyFileController.loadComboBox();
             copyStage.setScene(copyScene);
             copyStage.showAndWait();
@@ -309,7 +285,7 @@ public class OverviewController{
         }
     }
 
-    public void shareFile(){
+    private void shareFile(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ShareFile.fxml"));
             AnchorPane shareFilePage = (AnchorPane)fxmlLoader.load();
@@ -319,7 +295,7 @@ public class OverviewController{
             shareStage.initOwner(currentStage);
             Scene shareScene = new Scene(shareFilePage);
             ShareFileController shareFileController = fxmlLoader.getController();
-            shareFileController.initFileIdAndUserId(selFile, instrId, classes.getSelectionModel().getSelectedItem());
+            shareFileController.initFileIdAndUserId(selFile, instrId, selCourse);
             shareStage.setScene(shareScene);
             shareStage.showAndWait();
             loadData();
@@ -378,12 +354,11 @@ public class OverviewController{
         deleteAlert.setContentText("Are you sure you want to delete this file?");
         String deleteQuery = "DELETE FROM document WHERE iddocument NOT IN (SELECT iddocument FROM instrcourdoc);";
         String deleteInterQuery = "DELETE FROM instrcourdoc WHERE iddocument = ? AND idinstructor = ? AND idcourse = ? ;";
-        String deleteTagQuery = "DELETE FROM doctag WHERE iddocument = ?";
-        //String deleteTagMain = "DELETE FROM tag WHERE ? NOT IN (SELECT idtag FROM doctag)";
+        String deleteTagQuery = "DELETE FROM tag WHERE idtag NOT IN(SELECT idtag FROM doctag)";
         Optional<ButtonType> result = deleteAlert.showAndWait();
         if (result.get() == ButtonType.OK){
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
-                Integer courseId = getCourseId(connection);
+                Integer courseId = selCourse.getId();
                 connection.setAutoCommit(false);
                 PreparedStatement ps1 = connection.prepareStatement(deleteInterQuery);
                 ps1.setInt(1,selFile.getDocid());
@@ -391,17 +366,13 @@ public class OverviewController{
                 ps1.setInt(3,courseId);
                 ps1.executeUpdate();
                 ps1.close();
-                //if (docCheck(connection)){
                 PreparedStatement ps = connection.prepareStatement(deleteQuery);
-                //ps.setInt(1,selFile.getDocid());
                 ps.executeUpdate();
                 ps.close();
 
                 PreparedStatement psIntTag = connection.prepareStatement(deleteTagQuery);
-                psIntTag.setInt(1,selFile.getDocid());
                 psIntTag.executeUpdate();
                 psIntTag.close();
-                //}
                 connection.commit();
                 connection.setAutoCommit(true);
                 connection.close();
@@ -415,20 +386,8 @@ public class OverviewController{
         runPage();
     }
 
-    private Integer getCourseId(Connection connection) throws SQLException{
-        String courseQuery = "SELECT idcourse FROM project1.course WHERE courname = ?";
-        PreparedStatement ps = connection.prepareStatement(courseQuery);
-        ps.setString(1,classes.getSelectionModel().getSelectedItem());
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        Integer courseId = rs.getInt(1);
-        ps.close();
-        rs.close();
-        return courseId;
-    }
-
     private Boolean docCheck(Connection connection) throws SQLException{
-        String deleteCheck = "SELECT count(*) FROM project1.instrcourdoc WHERE iddocument = ?;";
+        String deleteCheck = "SELECT count(*) FROM instrcourdoc WHERE iddocument = ?;";
         PreparedStatement ps = connection.prepareStatement(deleteCheck);
         ps.setInt(1,selFile.getDocid());
         ResultSet rs = ps.executeQuery();
@@ -449,36 +408,32 @@ public class OverviewController{
     }
 
     public void loadData(){
-        //String newQuery = "SELECT DISTINCT courname FROM project1.course,project1.instrcour WHERE idinstructor = ? AND course.idcourse = instrcour.idcourse;";
-        String newQuery = "SELECT DISTINCT courname FROM project1.course,project1.instrcourdoc WHERE idinstructor = ? AND course.idcourse = instrcourdoc.idcourse;";
+        String newQuery = "SELECT DISTINCT course.idcourse, courname, faculty FROM course, instrcourdoc " +
+                "WHERE idinstructor = ? AND course.idcourse = instrcourdoc.idcourse ORDER BY courname";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            List<String> values = new ArrayList<>();
+            List<Courses> values = new ArrayList<>();
+            courseList.clear();
             PreparedStatement preparedStatement = connection.prepareStatement(newQuery);
             preparedStatement.setInt(1, instrId);
-            //preparedStatement.setInt(1, 1);
             ResultSet rs = preparedStatement.executeQuery();
             while (rs.next()){
-                String curClass = rs.getString(1);
-                values.add(curClass);
-            }
+                Integer curClassId = rs.getInt(1);
+                String curClassName = rs.getString(2);
+                String curClassFac = rs.getString(3);
 
-            preparedStatement.close();
+                courseList.add(new Courses(curClassId,curClassName,curClassFac));
+            }
+           preparedStatement.close();
             connection.close();
             rs.close();
-            ObservableList<String> courseList = FXCollections.observableArrayList(values);
             classes.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            //classes.setItems(courseList);
-            //assert classes != null : "fx:id=classes was not injected.";
-            //List<String> values = Arrays.asList("one", "two", "three");
-            classes.setItems(FXCollections.observableList(courseList));
+            classes.setItems(courseList);
         }catch (SQLException e) {
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }
 
     public void setUserId(Integer userId,String email, Integer admin){
-        //System.out.print("This is in setUserId:   ");
-        //System.out.println(userId);
         this.instrId = userId;
         this.email = email;
         this.admin = admin;
@@ -498,14 +453,14 @@ public class OverviewController{
         classes.getSelectionModel().selectedItemProperty().addListener( (v, oldvalue, newvalue) -> {
             files.getItems().clear();
             if (newvalue == null){
-                queryFiles(oldvalue);
+                System.out.println(selCourse);
+                queryFiles(oldvalue.getName());
             }else {
-                queryFiles(newvalue);
+                selCourse = classes.getSelectionModel().getSelectedItem();
+                System.out.println(selCourse);
+                queryFiles(newvalue.getName());
             }
             files.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            //SortedList<DocFile> sortedData = new SortedList<>(fileList);
-            //sortedData.comparatorProperty().bind(files.comparatorProperty());
-            //files.setItems(FXCollections.observableList(fileList));
             files.setItems(fileList);
         });
 
@@ -515,7 +470,7 @@ public class OverviewController{
         String fileQueryStr = "SELECT document.iddocument,title,uploader,uploaddate FROM instructor,document,course,instrcourdoc WHERE " +
                 "instructor.idinstructor = instrcourdoc.idinstructor AND instrcourdoc.iddocument = document.iddocument AND " +
                 "instrcourdoc.iddocument = document.iddocument AND instrcourdoc.idcourse = course.idcourse AND course.courname = ?" +
-                "AND instructor.idinstructor = ?";
+                "AND instructor.idinstructor = ? ORDER BY uploaddate DESC";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             PreparedStatement preparedStatement = connection.prepareStatement(fileQueryStr);
             preparedStatement.setString(1, courseName);
