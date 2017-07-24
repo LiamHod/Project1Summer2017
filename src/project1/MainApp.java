@@ -5,17 +5,14 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import project1.view.LoginController;
-import project1.view.OverviewController;
-import sun.applet.Main;
 
+import java.io.File;
 import java.io.IOException;
-import java.sql.*;
 
 public class MainApp extends Application {
 
@@ -36,10 +33,13 @@ public class MainApp extends Application {
 
     public void initlayout(){
         try{
-            //Parent root = FXMLLoader.load(getClass().getResource("view/Overview.fxml"));
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainApp.class.getResource("view/Login.fxml"));
             rootLayout = (AnchorPane) loader.load();
+            //File pdfFile = new File("10-Interpersonal Attraction.pdf");
+            //getHostServices().showDocument(pdfFile.toURI().toString());
+            //getHostServices().showDocument(getClass()
+            //        .getResource("Metal_gear_solid-wallpaper-10730376-min.jpg").toString());
 
             Scene scene = new Scene(rootLayout);
             mainGui.setScene(scene);
@@ -47,22 +47,8 @@ public class MainApp extends Application {
 
             LoginController controller = loader.getController();
             controller.setMainApp(this,mainGui);
-            Integer idReturn = controller.getUserID();
-            if (idReturn != null){
-//                loader = new FXMLLoader();
-//                loader.setLocation(MainApp.class.getResource("view/Overview.fxml"));
-//                homeLayout = (SplitPane) loader.load();
-//                stage.setTitle("Home Screen");
-//                stage.setScene(scene);
-//                stage.show();
-            }
-
         } catch (IOException e){
             e.printStackTrace();
         }
     }
-
-
-
-    public ObservableList<String> courseList = FXCollections.observableArrayList();
 }
