@@ -13,15 +13,17 @@ public class DocFile {
     private final StringProperty docname;
     private final StringProperty docdesc;
     private final StringProperty docdateadded;
+    private final StringProperty filetype;
 
 
-    public DocFile(Integer docid, String docname, String docdesc, Date docdateadded){
+    public DocFile(Integer docid, String docname, String docdesc, Date docdateadded, String filetype){
         this.docid = new SimpleIntegerProperty(docid);
         this.docname = new SimpleStringProperty(docname);
         this.docdesc = new SimpleStringProperty(docdesc);
         Format formatter = new SimpleDateFormat("MM/dd/yyyy");
         String docdateaddedstring = formatter.format(docdateadded);
         this.docdateadded = new SimpleStringProperty(docdateaddedstring);
+        this.filetype = new SimpleStringProperty(filetype);
     }
 
     public int getDocid() {
@@ -70,6 +72,18 @@ public class DocFile {
 
     public void setDocdateadded(String docdateadded) {
         this.docdateadded.set(docdateadded);
+    }
+
+    public String getFiletype() {
+        return filetype.get();
+    }
+
+    public StringProperty filetypeProperty() {
+        return filetype;
+    }
+
+    public void setFiletype(String filetype) {
+        this.filetype.set(filetype);
     }
 
     @Override

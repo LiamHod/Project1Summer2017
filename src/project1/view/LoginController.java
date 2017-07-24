@@ -17,6 +17,7 @@ package project1.view;
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+import javafx.application.HostServices;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -46,7 +47,6 @@ public class LoginController {
     private String user;
     private String dbpassword;
     private DBCreds dbCreds = DBCreds.INSTANCE;
-
     private MainApp mainApp;
     private OverviewController homeScreen;
     private LoginController loginScreen;

@@ -7,14 +7,18 @@ package project1.view;
 //        The Apache Software Foundation (http://www.apache.org/).
 
 
+import javafx.application.HostServices;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -26,10 +30,10 @@ import project1.model.Courses;
 import project1.model.DBCreds;
 import project1.model.DocFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -81,6 +85,7 @@ public class OverviewController{
     private Integer admin;
     private Courses selCourse;
     private DocFile selFile;
+    private List<String> allowedTypes = Arrays.asList("png","jpg","gif","bmp");
     private ObservableList<Courses> courseList = FXCollections.observableArrayList();
     private ObservableList<DocFile> fileList = FXCollections.observableArrayList();
 
@@ -97,6 +102,7 @@ public class OverviewController{
         uploadDateColumn.setCellValueFactory(cellData -> cellData.getValue().docdateaddedProperty());
         ContextMenu rightClickMenu = fileContextMenu();
         ContextMenu addFileMenu = notfileContextMenu();
+        ContextMenu previewMenu = previewContextMenu();
         addFileButton.setOnAction(e -> openAddFile());
         searchFilesButton.setOnAction(e -> searchFiles());
 
@@ -104,10 +110,15 @@ public class OverviewController{
             @Override
             public void handle(MouseEvent event) {
                 if(event.getButton() == MouseButton.SECONDARY && (selFile = files.getSelectionModel().getSelectedItem()) != null){
-                    System.out.println(selFile);
-                    files.getSelectionModel().clearSelection();
-                    files.setContextMenu(rightClickMenu);
-
+                    System.out.println(selFile.getFiletype());
+                    if (allowedTypes.contains(selFile.getFiletype())){
+                        files.getSelectionModel().clearSelection();
+                        files.setContextMenu(previewMenu);
+                    }else {
+                        System.out.println(selFile);
+                        files.getSelectionModel().clearSelection();
+                        files.setContextMenu(rightClickMenu);
+                    }
                 }else if (event.getButton() == MouseButton.SECONDARY){
                     files.getSelectionModel().clearSelection();
                     files.setContextMenu(addFileMenu);
@@ -161,6 +172,27 @@ public class OverviewController{
         }
     }
 
+    private ContextMenu previewContextMenu(){
+        ContextMenu rightClickMenu = new ContextMenu();
+        MenuItem previewMenu = new MenuItem("Preview...");
+        MenuItem renameMenu = new MenuItem("Rename...");
+        MenuItem downloadMenu = new MenuItem("Download...");
+        MenuItem copytoMenu = new MenuItem("Copy to...");
+        MenuItem addtagMenu = new MenuItem("Add/Remove Tag...");
+        MenuItem shareMenu = new MenuItem("Share...");
+        MenuItem deleteMenu = new MenuItem("Delete File");
+        rightClickMenu.getItems().addAll(previewMenu,renameMenu,downloadMenu,copytoMenu,addtagMenu,shareMenu,deleteMenu);
+        rightClickMenu.setAutoHide(true);
+        previewMenu.setOnAction(e -> previewFile());
+        renameMenu.setOnAction(e -> renameFile());
+        downloadMenu.setOnAction(e -> downloadFile());
+        copytoMenu.setOnAction(e -> copyFile());
+        shareMenu.setOnAction(e -> shareFile());
+        addtagMenu.setOnAction(e -> addTag());
+        deleteMenu.setOnAction(e -> deleteFile());
+        return rightClickMenu;
+    }
+
     private ContextMenu fileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem renameMenu = new MenuItem("Rename...");
@@ -189,6 +221,34 @@ public class OverviewController{
         addfileMenu.setOnAction(e -> openAddFile());
         searchMenu.setOnAction(e -> searchFiles());
         return rightClickMenu;
+    }
+
+    private void previewFile() {
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String prevQuery = "SELECT docfile FROM document WHERE iddocument = ?";
+            PreparedStatement ps = connection.prepareStatement(prevQuery);
+            ps.setInt(1,selFile.getDocid());
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            Blob imageBlob = rs.getBlob(1);
+            InputStream is = imageBlob.getBinaryStream();
+            BufferedImage image = ImageIO.read(is);
+            Image disimage = SwingFXUtils.toFXImage(image, null);
+            double imheight = disimage.getHeight();
+            double imwidth = disimage.getWidth();
+            ImageView imageView = new ImageView(disimage);
+            AnchorPane previewPage = new AnchorPane();
+            previewPage.getChildren().addAll(imageView);
+            Scene scene = new Scene(previewPage,imwidth,imheight);
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            System.out.print("IOException");
+        } catch (SQLException e) {
+            throw new IllegalStateException("Cannot connect the database!", e);
+        }
+
     }
 
     private void renameFile(){
@@ -467,7 +527,7 @@ public class OverviewController{
     }
 
     public ObservableList<DocFile> queryFiles(String courseName){
-        String fileQueryStr = "SELECT document.iddocument,title,uploader,uploaddate FROM instructor,document,course,instrcourdoc WHERE " +
+        String fileQueryStr = "SELECT document.iddocument,title,uploader,uploaddate,filetype FROM instructor,document,course,instrcourdoc WHERE " +
                 "instructor.idinstructor = instrcourdoc.idinstructor AND instrcourdoc.iddocument = document.iddocument AND " +
                 "instrcourdoc.iddocument = document.iddocument AND instrcourdoc.idcourse = course.idcourse AND course.courname = ?" +
                 "AND instructor.idinstructor = ? ORDER BY uploaddate DESC";
@@ -481,7 +541,8 @@ public class OverviewController{
                 String curFileTitle = rs.getString(2);
                 String curFileUploader = rs.getString(3);
                 Date curUploadDate = rs.getDate(4);
-                fileList.add(new DocFile(curFileID,curFileTitle,curFileUploader, curUploadDate));
+                String curFileType = rs.getString(5);
+                fileList.add(new DocFile(curFileID,curFileTitle,curFileUploader, curUploadDate, curFileType));
             }
             preparedStatement.close();
             connection.close();

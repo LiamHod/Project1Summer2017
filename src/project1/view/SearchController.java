@@ -65,15 +65,14 @@ public class SearchController {
         String searchQuery = "SELECT DISTINCT course.courname,document.title FROM document,course," +
                 "doctag,tag,instrcourdoc WHERE instrcourdoc.idinstructor = ? AND " +
                 "document.iddocument = instrcourdoc.iddocument AND course.idcourse = instrcourdoc.idcourse AND " +
-                "tag.idtag = doctag.idtag AND document.iddocument = doctag.iddocument AND tagname = ? OR " +
-                "document.title = ? OR course.courname = ? ORDER BY courname";
+                "tag.idtag = doctag.idtag AND document.iddocument = doctag.iddocument AND tagname = ? ORDER BY courname";
         if (checkInput()){
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 PreparedStatement ps = connection.prepareStatement(searchQuery);
                 ps.setInt(1,instrId);
                 ps.setString(2,searchTextBox.getText());
-                ps.setString(3,searchTextBox.getText());
-                ps.setString(4,searchTextBox.getText());
+                //ps.setString(3,searchTextBox.getText());
+                //ps.setString(4,searchTextBox.getText());
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()){
                     String curCourName = rs.getString(1);
