@@ -12,9 +12,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<SplitPane dividerPositions="0.29797979797979796" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="project1.view.OverviewController">
+<SplitPane dividerPositions="0.29797979797979796" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="background" stylesheets="@bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="project1.view.OverviewController">
   <items>
-    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+    <AnchorPane SplitPane.resizableWithParent="false">
          <children>
             <VBox alignment="CENTER" layoutX="38.0" layoutY="47.0" prefHeight="398.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
@@ -53,14 +53,14 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <HBox prefHeight="70.0" prefWidth="417.0" VBox.vgrow="NEVER">
+                  <HBox VBox.vgrow="NEVER">
                      <children>
-                        <Button fx:id="addFileButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Add File...">
+                        <Button fx:id="addFileButton" mnemonicParsing="false" text="Add File..." HBox.hgrow="NEVER">
                            <HBox.margin>
                               <Insets bottom="1.0" left="10.0" right="10.0" top="1.0" />
                            </HBox.margin>
                         </Button>
-                        <Button fx:id="searchFilesButton" maxHeight="1.7976931348623157E308" mnemonicParsing="false" text="Search Files...">
+                        <Button fx:id="searchFilesButton" mnemonicParsing="false" text="Search Files..." HBox.hgrow="NEVER">
                            <HBox.margin>
                               <Insets bottom="1.0" top="1.0" />
                            </HBox.margin>

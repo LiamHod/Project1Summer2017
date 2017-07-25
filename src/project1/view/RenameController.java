@@ -179,7 +179,7 @@ public class RenameController {
             Alert extAlert = new Alert(Alert.AlertType.WARNING);
             extAlert.setTitle("Extension added");
             extAlert.setHeaderText(null);
-            extAlert.setContentText("Please don't add extension to name");
+            extAlert.setContentText("Please don't add extra extension to name");
             extAlert.showAndWait();
             return false;
         }else if (FilenameUtils.getBaseName(renameTextBox.getText()).equals(FilenameUtils.getBaseName(docName))){

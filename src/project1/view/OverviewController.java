@@ -242,6 +242,7 @@ public class OverviewController{
             Scene scene = new Scene(previewPage,imwidth,imheight);
             Stage stage = new Stage();
             stage.setScene(scene);
+            stage.setTitle(selFile.getDocname());
             stage.show();
         } catch (IOException e) {
             System.out.print("IOException");
