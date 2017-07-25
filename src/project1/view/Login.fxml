@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
@@ -7,13 +8,17 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="project1.view.LoginController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="300.0" stylesheets="@bootstrap3.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="project1.view.LoginController">
    <children>
       <TextField fx:id="emailbox" layoutX="117.0" layoutY="38.0" />
       <Label layoutX="61.0" layoutY="42.0" text="Email" />
       <Label layoutX="40.0" layoutY="92.0" text="Password" />
       <PasswordField fx:id="passwordbox" layoutX="117.0" layoutY="88.0" />
-      <Button fx:id="login" layoutX="100.0" layoutY="139.0" mnemonicParsing="false" onAction="#logintosystem" prefWidth="100.0" text="Login" />
+      <Button fx:id="login" layoutX="100.0" layoutY="139.0" mnemonicParsing="false" onAction="#logintosystem" prefWidth="100.0" text="Login">
+         <styleClass>
+            <String fx:value="primary" />
+            <String fx:value="action-btn" />
+         </styleClass></Button>
       <Hyperlink fx:id="databaseLink" layoutY="175.0" onAction="#handleSetUp" text="Database Setup" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" />
    </children>
 </AnchorPane>
