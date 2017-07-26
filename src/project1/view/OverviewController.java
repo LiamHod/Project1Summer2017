@@ -7,7 +7,6 @@ package project1.view;
 //        The Apache Software Foundation (http://www.apache.org/).
 
 
-import javafx.application.HostServices;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
@@ -29,9 +28,7 @@ import project1.MainApp;
 import project1.model.Courses;
 import project1.model.DBCreds;
 import project1.model.DocFile;
-
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.sql.*;
@@ -246,7 +243,17 @@ public class OverviewController{
             stage.show();
         } catch (IOException e) {
             System.out.print("IOException");
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error previewing image");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't preview the image, check your connection and please try again");
+            sqlAlert.showAndWait();
         } catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error previewing image");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't preview the image, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
 
@@ -318,7 +325,17 @@ public class OverviewController{
                 rs.close();
             }  catch (IOException e){
                 System.out.print("IOException");
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error downloading file from database");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't download the file, check your connection and please try again");
+                sqlAlert.showAndWait();
             } catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error downloading file from database");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't download the file, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
             }
         }
@@ -438,6 +455,11 @@ public class OverviewController{
                 connection.setAutoCommit(true);
                 connection.close();
             }catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error deleting file");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't delete the file, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
             }
         } else {
@@ -490,6 +512,11 @@ public class OverviewController{
             classes.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             classes.setItems(courseList);
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading courses");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the courses, check your connection and restart program");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }
@@ -550,6 +577,11 @@ public class OverviewController{
             rs.close();
             return fileList;
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading files");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the files, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }

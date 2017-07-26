@@ -72,6 +72,11 @@ public class CopyFileController {
             rs.close();
 
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading courses");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the courses, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }
@@ -137,6 +142,11 @@ public class CopyFileController {
                 connection.setAutoCommit(true);
                 connection.close();
             } catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error copying file");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't copy the file, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
 
             }

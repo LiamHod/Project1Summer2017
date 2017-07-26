@@ -71,8 +71,6 @@ public class SearchController {
                 PreparedStatement ps = connection.prepareStatement(searchQuery);
                 ps.setInt(1,instrId);
                 ps.setString(2,searchTextBox.getText());
-                //ps.setString(3,searchTextBox.getText());
-                //ps.setString(4,searchTextBox.getText());
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()){
                     String curCourName = rs.getString(1);
@@ -85,6 +83,11 @@ public class SearchController {
                 resultsTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
                 resultsTable.setItems(searchList);
             }catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error loading search results");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't load search results, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
             }
         }

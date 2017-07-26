@@ -111,6 +111,11 @@ public class AddTagController {
                 connection.close();
                 tagTextBox.clear();
             }catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error adding tags");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't add the tags, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
             }
 
@@ -142,6 +147,11 @@ public class AddTagController {
             ps.close();
             connection.close();
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error removing tags");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't remove the tag, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
         populateTagTable();
@@ -170,6 +180,13 @@ public class AddTagController {
             tagTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
             tagTableView.setItems(tagList);
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading tags");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the tags, check your connection and please try again");
+            sqlAlert.showAndWait();
+            Stage currStage = (Stage) cancelButton.getScene().getWindow();
+            currStage.close();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
         tagsLeft(false);

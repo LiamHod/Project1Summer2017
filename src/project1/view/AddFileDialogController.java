@@ -77,6 +77,11 @@ public class AddFileDialogController {
             rs.close();
 
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading courses");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the courses, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }
@@ -92,6 +97,11 @@ public class AddFileDialogController {
         Stage currStage = (Stage) fileButton.getScene().getWindow();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open File to be Uploaded");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Files", "*.*"),
+                new FileChooser.ExtensionFilter("Text Files", "*.txt"),
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"),
+                new FileChooser.ExtensionFilter("Audio Files", "*.wav", "*.mp3", "*.aac"));
         File file = fileChooser.showOpenDialog(currStage);
         if (file != null && file.exists()) {
             System.out.println(file.length());
@@ -153,6 +163,13 @@ public class AddFileDialogController {
             }  catch (IOException e){
                 System.out.print("IOException");
             }catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error adding file");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't add file, check your connection and please try again");
+                sqlAlert.showAndWait();
+                Stage currStage = (Stage) okButton.getScene().getWindow();
+                currStage.close();
                 throw new IllegalStateException("Cannot connect the database!", e);
 
             }

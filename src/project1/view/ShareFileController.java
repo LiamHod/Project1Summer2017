@@ -65,6 +65,11 @@ public class ShareFileController {
                 Stage currStage = (Stage) okButton.getScene().getWindow();
                 currStage.close();
             } catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error sharing file");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't share the file, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
 
             }
