@@ -213,6 +213,12 @@ public class AdminController {
                 }
             }
 
+        }else{
+            Alert noSelAlert = new Alert(Alert.AlertType.WARNING);
+            noSelAlert.setTitle("No course selected");
+            noSelAlert.setHeaderText(null);
+            noSelAlert.setContentText("Please select a course before clicking remove");
+            noSelAlert.showAndWait();
         }
         reloadCourse();
     }
@@ -282,6 +288,12 @@ public class AdminController {
                     throw new IllegalStateException("Cannot connect the database!", e);
                 }
             }
+        }else{
+            Alert noSelAlert = new Alert(Alert.AlertType.WARNING);
+            noSelAlert.setTitle("No instructor selected");
+            noSelAlert.setHeaderText(null);
+            noSelAlert.setContentText("Please select an instructor before clicking remove");
+            noSelAlert.showAndWait();
         }
         reloadInstructors();
     }
