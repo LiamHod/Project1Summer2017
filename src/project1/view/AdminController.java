@@ -67,9 +67,6 @@ public class AdminController {
     @FXML
     private TableView<Instructor> instructorTableView;
 
-//    @FXML
-//    private TableColumn<Instructor, Integer> instrIdColumn;
-
     @FXML
     private TableColumn<Instructor, String> firstNameColumn;
 
@@ -81,9 +78,6 @@ public class AdminController {
 
     @FXML
     private TableColumn<Instructor, String> facultyInstrColumn;
-
-//    @FXML
-//    private TableColumn<Instructor, String> passwordColumn;
 
     @FXML
     private TableColumn<Instructor, Integer> adminColumn;
@@ -172,11 +166,21 @@ public class AdminController {
                 courseNameTextBox.clear();
                 facultyCourTextBox.clear();
             } catch (SQLException e) {
-                Alert alreadyAlert = new Alert(Alert.AlertType.ERROR);
-                alreadyAlert.setTitle("This course already exists");
-                alreadyAlert.setHeaderText(null);
-                alreadyAlert.setContentText("This course already exists, please use another course name");
-                alreadyAlert.showAndWait();
+                int errorCode = e.getErrorCode();
+                if (errorCode == 1062) {
+                    System.out.println(errorCode);
+                    Alert alreadyAlert = new Alert(Alert.AlertType.ERROR);
+                    alreadyAlert.setTitle("This course already exists");
+                    alreadyAlert.setHeaderText(null);
+                    alreadyAlert.setContentText("This course already exists, please use another course name");
+                    alreadyAlert.showAndWait();
+                }else{
+                    Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                    sqlAlert.setTitle("Error adding course");
+                    sqlAlert.setHeaderText(null);
+                    sqlAlert.setContentText("The program encountered an error and couldn't add the course, check your connection and please try again");
+                    sqlAlert.showAndWait();
+                }
             }
         }
         reloadCourse();
@@ -200,6 +204,11 @@ public class AdminController {
                     ps.close();
                     connection.close();
                 } catch (SQLException e) {
+                    Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                    sqlAlert.setTitle("Error removing course");
+                    sqlAlert.setHeaderText(null);
+                    sqlAlert.setContentText("The program encountered an error and couldn't remove the course, check your connection and please try again");
+                    sqlAlert.showAndWait();
                     throw new IllegalStateException("Cannot connect the database!", e);
                 }
             }
@@ -228,11 +237,20 @@ public class AdminController {
                 emailTextBox.clear();
                 passBox.clear();
             } catch (SQLException e) {
-                Alert alreadyAlert = new Alert(Alert.AlertType.ERROR);
-                alreadyAlert.setTitle("This email already exists");
-                alreadyAlert.setHeaderText(null);
-                alreadyAlert.setContentText("This email already exists, please use another email");
-                alreadyAlert.showAndWait();
+                int errorCode = e.getErrorCode();
+                if (errorCode == 1062) {
+                    Alert alreadyAlert = new Alert(Alert.AlertType.ERROR);
+                    alreadyAlert.setTitle("This email already exists");
+                    alreadyAlert.setHeaderText(null);
+                    alreadyAlert.setContentText("This email already exists, please use another email");
+                    alreadyAlert.showAndWait();
+                }else{
+                    Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                    sqlAlert.setTitle("Error adding instructor");
+                    sqlAlert.setHeaderText(null);
+                    sqlAlert.setContentText("The program encountered an error and couldn't add the instructor, check your connection and please try again");
+                    sqlAlert.showAndWait();
+                }
             }
         }
         reloadInstructors();
@@ -256,6 +274,11 @@ public class AdminController {
                     ps.close();
                     connection.close();
                 } catch (SQLException e) {
+                    Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                    sqlAlert.setTitle("Error removing instructor");
+                    sqlAlert.setHeaderText(null);
+                    sqlAlert.setContentText("The program encountered an error and couldn't remove the instructor, check your connection and please try again");
+                    sqlAlert.showAndWait();
                     throw new IllegalStateException("Cannot connect the database!", e);
                 }
             }
@@ -291,6 +314,11 @@ public class AdminController {
             ps.close();
             connection.close();
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error changing admin privileges");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't change admin privileges, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
         reloadInstructors();
@@ -319,6 +347,11 @@ public class AdminController {
             connection.close();
             courseTableView.setItems(courseList);
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading courses");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the courses, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }
@@ -350,6 +383,11 @@ public class AdminController {
             connection.close();
             instructorTableView.setItems(instructorList);
         }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading instructors");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the instructors, check your connection and please try again");
+            sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
     }

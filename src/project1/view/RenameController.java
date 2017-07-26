@@ -78,6 +78,11 @@ public class RenameController {
                 ps.close();
                 connection.close();
             } catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error renaming file");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and couldn't rename the file, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
 
             }

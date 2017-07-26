@@ -92,6 +92,11 @@ public class ChangePassController {
                 }
                 connection.close();
             }catch (SQLException e) {
+                Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+                sqlAlert.setTitle("Error changing password");
+                sqlAlert.setHeaderText(null);
+                sqlAlert.setContentText("The program encountered an error and change the password, check your connection and please try again");
+                sqlAlert.showAndWait();
                 throw new IllegalStateException("Cannot connect the database!", e);
             }
             Stage currStage = (Stage) cancelButton.getScene().getWindow();
