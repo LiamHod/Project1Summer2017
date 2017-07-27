@@ -35,7 +35,7 @@ public class AddFileDialogController {
     private Integer instrId;
     private Integer courseId;
     private String courname;
-    ObservableList<Courses> courseList = FXCollections.observableArrayList();
+    private ObservableList<Courses> courseList = FXCollections.observableArrayList();
 
     @FXML
     private TextArea descTextBox;
@@ -103,8 +103,12 @@ public class AddFileDialogController {
                 new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif"),
                 new FileChooser.ExtensionFilter("Audio Files", "*.wav", "*.mp3", "*.aac"));
         File file = fileChooser.showOpenDialog(currStage);
+
+        //Makes sure the file exists
         if (file != null && file.exists()) {
             System.out.println(file.length());
+
+            //Makes sure the file is not over 10 MB
             if (file.length() > 10485760){
                 Alert fileAlert = new Alert(Alert.AlertType.WARNING);
                 fileAlert.setTitle("File too large");
@@ -176,6 +180,14 @@ public class AddFileDialogController {
         }
     }
 
+    /**
+     * Checks the filename to see if is already exists, if it does it will keep adding "- Copy" till it finds no an unused name
+     * @param connection - the connection used
+     * @param filename - the filename checked
+     * @param courseId - the course the file is being created under
+     * @return - the filename that is unique
+     * @throws SQLException
+     */
     private String checkFileName(Connection connection, String filename, Integer courseId) throws SQLException{
         String fileExistQuery = "SELECT COUNT(*) FROM document,instrcourdoc WHERE instrcourdoc.iddocument = " +
                 "document.iddocument AND instrcourdoc.idinstructor = ? AND instrcourdoc.idcourse = ? AND title = ?";
@@ -202,6 +214,13 @@ public class AddFileDialogController {
 
     }
 
+    /**
+     * This updates the intermediate table in the database so that the user has access to the file they added
+     * @param docId - the id of the newly created document
+     * @param courseId - The course the file is under
+     * @param connection - The connection being used
+     * @throws SQLException
+     */
     private void updateIntermediateTable(Integer docId,Integer courseId, Connection connection) throws SQLException{
         String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
         PreparedStatement psICD = connection.prepareStatement(instrCourDocQuery);
@@ -212,6 +231,10 @@ public class AddFileDialogController {
         psICD.close();
     }
 
+    /**
+     * Check the input boxes and enforced required inputs if necessary
+     * @return - boolean value if fields were valid or not
+     */
     private Boolean checkInputs(){
         String errorMessage = "";
         if (fileTextBox.getText() == null || fileTextBox.getText().length() == 0){
@@ -236,6 +259,12 @@ public class AddFileDialogController {
         }
     }
 
+    /**
+     * Sets up the email, id and default selected course in combobox
+     * @param email - Users email
+     * @param instrId - Users id
+     * @param selCourse - the selected course
+     */
     public void setEmailandID(String email,Integer instrId, Courses selCourse){
         this.email = email;
         this.instrId = instrId;
@@ -252,6 +281,12 @@ public class AddFileDialogController {
 
     }
 
+    /**
+     * Updates the tags for the newly created file
+     * @param connection - current connection
+     * @param docId - new created document id
+     * @throws SQLException
+     */
     private void updateTags(Connection connection,Integer docId) throws SQLException{
         String totalTags = tagTextBox.getText();
         Integer tagId;

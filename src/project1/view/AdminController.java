@@ -298,6 +298,10 @@ public class AdminController {
         reloadInstructors();
     }
 
+    /**
+     * Creates context menu if the user selected already has admin privileges
+     * @return - the context menu
+     */
     private ContextMenu createAdminContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem adminMenu = new MenuItem("Remove Admin Privileges");
@@ -306,6 +310,10 @@ public class AdminController {
         return rightClickMenu;
     }
 
+    /**
+     * Creates context menu if the user selected does not have admin privileges
+     * @return - the context menu
+     */
     private ContextMenu createNotAdminContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem adminMenu = new MenuItem("Add Admin Privileges");
@@ -314,6 +322,9 @@ public class AdminController {
         return rightClickMenu;
     }
 
+    /**
+     * Changes the selected users status as admin
+     */
     private void flipAdmin(){
         int curAdmin = selInstr.getAdmin();
         curAdmin ^= 1;
@@ -336,12 +347,20 @@ public class AdminController {
         reloadInstructors();
     }
 
+    /**
+     * Gets rid of spaces in string and forces uppercase
+     * @param oldString - the string to be formatted
+     * @return - the string that is correctly formatted
+     */
     private String formatString(String oldString){
         String newString = oldString.replaceAll("\\s+","");
         newString = newString.toUpperCase();
         return newString;
     }
 
+    /**
+     * Loads the courses into the table
+     */
     private void loadCourse(){
         courseTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         String loadCourseQuery = "SELECT * FROM course ORDER BY courname";
@@ -368,11 +387,17 @@ public class AdminController {
         }
     }
 
+    /**
+     * Clears and reloads the courses in the table
+     */
     private void reloadCourse(){
         courseList.clear();
         loadCourse();
     }
 
+    /**
+     * Loads the instructors into the table
+     */
     private void loadInstructors(){
         instructorTableView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         String loadInstrQuery = "SELECT * FROM instructor WHERE idinstructor != ? ORDER BY lname";
@@ -404,11 +429,18 @@ public class AdminController {
         }
     }
 
+    /**
+     * Clears and reloads the intructors in the table
+     */
     private void reloadInstructors(){
         instructorList.clear();
         loadInstructors();
     }
 
+    /**
+     * Checks if the course inputs are valid
+     * @return - boolean value if the course inputs are valid or not
+     */
     private Boolean isCourInputsValid(){
         String errorMessage = "";
         if (courseNameTextBox.getText() == null || courseNameTextBox.getText().length() == 0){
@@ -429,6 +461,10 @@ public class AdminController {
         }
     }
 
+    /**
+     * Checks if the instructor inputs are valid
+     * @return - boolean value if the instructor inputs are valid or not
+     */
     private Boolean isInstrInputsValid(){
         String errorMessage = "";
         if (firstNameTextBox.getText() == null || firstNameTextBox.getText().length() == 0){
@@ -458,6 +494,10 @@ public class AdminController {
         }
     }
 
+    /**
+     * Initializes the current user id
+     * @param instrId - the current users id
+     */
     public void initId(Integer instrId){
         this.instrId = instrId;
     }

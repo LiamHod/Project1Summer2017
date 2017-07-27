@@ -105,6 +105,10 @@ public class ChangePassController {
 
     }
 
+    /**
+     * Checks to see if the inputs are value or not
+     * @return - boolean value if the inputs are valid or not
+     */
     private Boolean checkInputs(){
         String errorMessage = "";
         if (oldPassTextBox.getText() == null || oldPassTextBox.getText().length() == 0){
@@ -134,6 +138,10 @@ public class ChangePassController {
         }
     }
 
+    /**
+     * Initializes the current user id
+     * @param instrId - the current users id
+     */
     public void initValues(Integer instrId){
         this.instrId = instrId;
     }

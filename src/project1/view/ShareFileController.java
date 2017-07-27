@@ -76,6 +76,10 @@ public class ShareFileController {
         }
     }
 
+    /**
+     * Checks to see if inputs are valid
+     * @return - boolean value of whether the inputs are valid or not
+     */
     private Boolean checkInput(){
         if (emailTextBox.getText() == null || emailTextBox.getText().length() == 0){
             Alert emailAlert = new Alert(Alert.AlertType.WARNING);
@@ -131,6 +135,9 @@ public class ShareFileController {
 
     }
 
+    /**
+     * Alert if email entered doesn't exist in system
+     */
     private void validAlert(){
         Alert validAlert = new Alert(Alert.AlertType.WARNING);
         validAlert.setTitle("Enter a valid email");
@@ -139,6 +146,9 @@ public class ShareFileController {
         validAlert.showAndWait();
     }
 
+    /**
+     *  Alert if the email entered already has file
+     */
     private void alreadyAlert(){
         Alert alreadyAlert = new Alert(Alert.AlertType.WARNING);
         alreadyAlert.setTitle("Invalid recipient");
@@ -147,6 +157,9 @@ public class ShareFileController {
         alreadyAlert.showAndWait();
     }
 
+    /**
+     * Alert if share was successful
+     */
     private void successAlert(){
         Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
         successAlert.setTitle("Share Completed");
@@ -155,7 +168,12 @@ public class ShareFileController {
         successAlert.showAndWait();
     }
 
-
+    /**
+     * Initalizes values for controller
+     * @param selFile - current selected file
+     * @param instrId - user id
+     * @param curCourse - current selected course
+     */
     public void initFileIdAndUserId(DocFile selFile, Integer instrId, Courses curCourse){
         this.docId = selFile.getDocid();
         this.docName = selFile.getDocname();
