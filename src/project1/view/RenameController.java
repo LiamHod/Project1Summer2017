@@ -91,6 +91,12 @@ public class RenameController {
         currStage.close();
     }
 
+    /**
+     * Initializes values for controller
+     * @param instrId - user id
+     * @param currClass - current selected class
+     * @param selFile - current selected file
+     */
     public void initValues(Integer instrId, Courses currClass, DocFile selFile){
         this.instrId = instrId;
         this.currClassName = currClass.getName();
@@ -100,6 +106,13 @@ public class RenameController {
         renameTextBox.setText(FilenameUtils.getBaseName(selFile.getDocname()));
     }
 
+    /**
+     * Checks to see if file already exists, if it does it add "- Copy" to name till new filename found
+     * @param connection - current connection
+     * @param filename - filename to check
+     * @return - new filename to use
+     * @throws SQLException
+     */
     private String checkFileName(Connection connection, String filename) throws SQLException{
         String fileExistQuery = "SELECT COUNT(*) FROM document,instrcourdoc WHERE instrcourdoc.iddocument = " +
                 "document.iddocument AND instrcourdoc.idinstructor = ? AND instrcourdoc.idcourse = ? AND title = ?";
@@ -128,6 +141,13 @@ public class RenameController {
 
     }
 
+    /**
+     * Transfers tags to renamed file
+     * @param connection - current connection
+     * @param oldDocId - old file id
+     * @param newDocId - new file id
+     * @throws SQLException
+     */
     private void transferTags(Connection connection,Integer oldDocId, Integer newDocId) throws SQLException{
         int curTagId;
         String tagQuery = "SELECT idtag FROM doctag WHERE iddocument = ?;";
@@ -147,6 +167,12 @@ public class RenameController {
         psTag.close();
     }
 
+    /**
+     * Checks to see if the old file needs to be removed (No one else is using it)
+     * @param connection - current connection
+     * @param oldDocId - old file id
+     * @throws SQLException
+     */
     private void removeOldFile(Connection connection, Integer oldDocId) throws SQLException{
         String removeQuery = "DELETE FROM instrcourdoc WHERE iddocument = ? AND idinstructor = ? AND idcourse = ?";
         String deleteQuery = "DELETE FROM document WHERE iddocument = ?;";
@@ -172,6 +198,10 @@ public class RenameController {
         psRem.close();
     }
 
+    /**
+     * Checks to see if inputs are valid
+     * @return - boolean value of whether the inputs are valid or not
+     */
     private boolean isValid(){
         if (renameTextBox.getText() == null || renameTextBox.getText().length() == 0){
             Alert inputAlert = new Alert(Alert.AlertType.WARNING);

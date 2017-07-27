@@ -93,6 +93,10 @@ public class SearchController {
         }
     }
 
+    /**
+     * Checks to see if inputs are valid
+     * @return - boolean value of whether the inputs are valid or not
+     */
     private Boolean checkInput(){
         if (searchTextBox.getText() == null || searchTextBox.getText().length() == 0){
             Alert searchAlert = new Alert(Alert.AlertType.WARNING);
@@ -106,6 +110,10 @@ public class SearchController {
         }
     }
 
+    /**
+     * Initalizes value for controller
+     * @param instrId - user id
+     */
     public void initValue(Integer instrId){
         this.instrId = instrId;
     }

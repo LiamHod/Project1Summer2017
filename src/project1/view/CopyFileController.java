@@ -53,44 +53,6 @@ public class CopyFileController {
     private void initialize(){
     }
 
-    public void loadComboBox(){
-        String newQuery = "SELECT * FROM course WHERE idcourse != ? ORDER BY courname;";
-        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            PreparedStatement ps = connection.prepareStatement(newQuery);
-            ps.setInt(1,oldCourseId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()){
-                Integer curClassId = rs.getInt(1);
-                String curClass = rs.getString(2);
-                String curClassFac = rs.getString(3);
-                courseList.add(new Courses(curClassId,curClass,curClassFac));
-            }
-            copyComboBox.getItems().clear();
-            copyComboBox.setItems(courseList);
-            ps.close();
-            connection.close();
-            rs.close();
-
-        }catch (SQLException e) {
-            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
-            sqlAlert.setTitle("Error loading courses");
-            sqlAlert.setHeaderText(null);
-            sqlAlert.setContentText("The program encountered an error and couldn't load the courses, check your connection and please try again");
-            sqlAlert.showAndWait();
-            throw new IllegalStateException("Cannot connect the database!", e);
-        }
-    }
-
-    public void setIdAndCurrCour(Integer instrId, Courses currCour, DocFile selFile){
-        this.instrId = instrId;
-        this.currCourName = currCour.getName();
-        this.oldCourseId = currCour.getId();
-        this.docId = selFile.getDocid();
-        this.selFileName = selFile.getDocname();
-        fileNameLabel.setText(selFileName);
-        fileNameLabel.setVisible(true);
-    }
-
     @FXML
     void handleCancel(ActionEvent event) {
         Stage currStage = (Stage) cancelButton.getScene().getWindow();
@@ -156,6 +118,61 @@ public class CopyFileController {
 
     }
 
+    /**
+     * Loads the course combobox when the page opens
+     */
+    public void loadComboBox(){
+        String newQuery = "SELECT * FROM course WHERE idcourse != ? ORDER BY courname;";
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            PreparedStatement ps = connection.prepareStatement(newQuery);
+            ps.setInt(1,oldCourseId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()){
+                Integer curClassId = rs.getInt(1);
+                String curClass = rs.getString(2);
+                String curClassFac = rs.getString(3);
+                courseList.add(new Courses(curClassId,curClass,curClassFac));
+            }
+            copyComboBox.getItems().clear();
+            copyComboBox.setItems(courseList);
+            ps.close();
+            connection.close();
+            rs.close();
+
+        }catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error loading courses");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't load the courses, check your connection and please try again");
+            sqlAlert.showAndWait();
+            throw new IllegalStateException("Cannot connect the database!", e);
+        }
+    }
+
+    /**
+     * Initalizes the values used in the controller
+     * @param instrId - current user id
+     * @param currCour - current course selected
+     * @param selFile - current file selected
+     */
+    public void setIdAndCurrCour(Integer instrId, Courses currCour, DocFile selFile){
+        this.instrId = instrId;
+        this.currCourName = currCour.getName();
+        this.oldCourseId = currCour.getId();
+        this.docId = selFile.getDocid();
+        this.selFileName = selFile.getDocname();
+        fileNameLabel.setText(selFileName);
+        fileNameLabel.setVisible(true);
+    }
+
+
+    /**
+     * Checks to see if the filename already exists and adds "- Copy" till it finds a new filename
+     * @param connection - current connection
+     * @param filename - filename of current file
+     * @return - unused filename
+     * @throws SQLException
+     */
     private String checkFileName(Connection connection, String filename) throws SQLException{
         String fileExistQuery = "SELECT COUNT(*) FROM document,instrcourdoc WHERE instrcourdoc.iddocument = " +
                 "document.iddocument AND instrcourdoc.idinstructor = ? AND instrcourdoc.idcourse = ? AND title = ?";
@@ -183,6 +200,13 @@ public class CopyFileController {
 
     }
 
+    /**
+     * Transfers tags if file needed to be renamed
+     * @param connection - current connection
+     * @param oldDocId - old file
+     * @param newDocId - new file
+     * @throws SQLException
+     */
     private void transferTags(Connection connection,Integer oldDocId, Integer newDocId) throws SQLException{
         int curTagId;
         String tagQuery = "SELECT idtag FROM doctag WHERE iddocument = ?;";
@@ -202,6 +226,9 @@ public class CopyFileController {
         psTag.close();
     }
 
+    /**
+     * Alert for a successful copy
+     */
     private void successAlert(){
         Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
         successAlert.setTitle("Copy Completed");
@@ -210,6 +237,10 @@ public class CopyFileController {
         successAlert.showAndWait();
     }
 
+    /**
+     * Checks to see if inputs are valid
+     * @return - boolean value of whether the inputs are valid or not
+     */
     private Boolean checkInput(){
         if (copyComboBox.getSelectionModel().getSelectedItem() == null){
             Alert comboboxAlert = new Alert(Alert.AlertType.WARNING);

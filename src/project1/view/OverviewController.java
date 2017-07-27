@@ -103,9 +103,12 @@ public class OverviewController{
         addFileButton.setOnAction(e -> openAddFile());
         searchFilesButton.setOnAction(e -> searchFiles());
 
+        // Listens for mouse click events on the file list
         files.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+
+                //If the click was the right click then a context menu is shown
                 if(event.getButton() == MouseButton.SECONDARY && (selFile = files.getSelectionModel().getSelectedItem()) != null){
                     System.out.println(selFile.getFiletype());
                     if (allowedTypes.contains(selFile.getFiletype())){
@@ -169,6 +172,10 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Context menu that has preview as an option
+     * @return - the context menu
+     */
     private ContextMenu previewContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem previewMenu = new MenuItem("Preview...");
@@ -190,6 +197,10 @@ public class OverviewController{
         return rightClickMenu;
     }
 
+    /**
+     * Context menu that doesn't have preview as an option
+     * @return - the context menu
+     */
     private ContextMenu fileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem renameMenu = new MenuItem("Rename...");
@@ -209,6 +220,10 @@ public class OverviewController{
         return rightClickMenu;
     }
 
+    /**
+     * Context menu if empty space is right clicked on
+     * @return - the context menu
+     */
     private ContextMenu notfileContextMenu(){
         ContextMenu rightClickMenu = new ContextMenu();
         MenuItem addfileMenu = new MenuItem("Add File...");
@@ -220,6 +235,9 @@ public class OverviewController{
         return rightClickMenu;
     }
 
+    /**
+     * Loads a file preview
+     */
     private void previewFile() {
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             String prevQuery = "SELECT docfile FROM document WHERE iddocument = ?";
@@ -259,6 +277,9 @@ public class OverviewController{
 
     }
 
+    /**
+     * Loads the page to rename a file
+     */
     private void renameFile(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Rename.fxml"));
@@ -280,6 +301,9 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Loads the page to add a new file
+     */
     private void openAddFile(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddFile.fxml"));
@@ -301,6 +325,9 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Opens filechooser to let user download the file
+     */
     private void downloadFile(){
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialFileName(selFile.getDocname());
@@ -341,6 +368,9 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Opens pages to copy a file
+     */
     private void copyFile(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("CopyFile.fxml"));
@@ -363,6 +393,9 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Opens a page to share a file with another user
+     */
     private void shareFile(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("ShareFile.fxml"));
@@ -384,6 +417,9 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Opens a page to add/remove tags from a file
+     */
     private void addTag(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("AddTag.fxml"));
@@ -405,6 +441,9 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Opens a page to search files
+     */
     private void searchFiles(){
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Search.fxml"));
@@ -425,6 +464,9 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Opens confirmation if the user wants to delete a file, if they do then the file is deleted from their view
+     */
     private void deleteFile(){
         Alert deleteAlert = new Alert(Alert.AlertType.CONFIRMATION);
         deleteAlert.setTitle("Delete This File?");
@@ -469,27 +511,9 @@ public class OverviewController{
         runPage();
     }
 
-    private Boolean docCheck(Connection connection) throws SQLException{
-        String deleteCheck = "SELECT count(*) FROM instrcourdoc WHERE iddocument = ?;";
-        PreparedStatement ps = connection.prepareStatement(deleteCheck);
-        ps.setInt(1,selFile.getDocid());
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        Integer results = rs.getInt(1);
-        ps.close();
-        rs.close();
-        return (results < 1);
-    }
-
-
-    public void setLogCont(LoginController logCont){
-        this.logCont = logCont;
-
-    }
-    public Integer getUserId(){
-        return this.instrId;
-    }
-
+    /**
+     * Loads courses into listview on left side
+     */
     public void loadData(){
         String newQuery = "SELECT DISTINCT course.idcourse, courname, faculty FROM course, instrcourdoc " +
                 "WHERE idinstructor = ? AND course.idcourse = instrcourdoc.idcourse ORDER BY courname";
@@ -521,6 +545,12 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Initializes values for controller
+     * @param userId - user id
+     * @param email - user email
+     * @param admin - user admin status
+     */
     public void setUserId(Integer userId,String email, Integer admin){
         this.instrId = userId;
         this.email = email;
@@ -530,12 +560,21 @@ public class OverviewController{
         }
     }
 
+    /**
+     * Initializes main app and the main stage
+     * @param mainApp - mainApp object
+     * @param mainGui - mainGui stage
+     * @param currentStage - currentStage stage
+     */
     public void initMainScreen(MainApp mainApp,Stage mainGui,Stage currentStage){
         this.currentStage = currentStage;
         this.mainApp = mainApp;
         this.mainGui = mainGui;
     }
 
+    /**
+     * Listens for course selection changes
+     */
     public void runPage(){
         //https://www.youtube.com/watch?v=WZGyP57IH6M&list=PL6gx4Cwl9DGBzfXLWLSYVy8EbTdpGbUIG&index=13
         classes.getSelectionModel().selectedItemProperty().addListener( (v, oldvalue, newvalue) -> {
@@ -554,6 +593,11 @@ public class OverviewController{
 
     }
 
+    /**
+     * Loads files for currently selected course
+     * @param courseName - Current course name
+     * @return - ObservableList of current files for selected course
+     */
     public ObservableList<DocFile> queryFiles(String courseName){
         String fileQueryStr = "SELECT document.iddocument,title,uploader,uploaddate,filetype FROM instructor,document,course,instrcourdoc WHERE " +
                 "instructor.idinstructor = instrcourdoc.idinstructor AND instrcourdoc.iddocument = document.iddocument AND " +

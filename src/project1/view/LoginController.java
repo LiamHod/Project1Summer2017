@@ -156,16 +156,20 @@ public class LoginController {
         }
     }
 
+    /**
+     * Passes the mainApp object and main stage
+     * @param mainApp - the mainApp object
+     * @param mainGui - the main stage
+     */
     public void setMainApp(MainApp mainApp,Stage mainGui){
         this.mainApp = mainApp;
         this.mainGui = mainGui;
 
     }
 
-    public Integer getUserID(){
-        return instrid;
-    }
-
+    /**
+     * Alert if login failed
+     */
     public void loginFailed(){
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Login Failed");
@@ -173,6 +177,12 @@ public class LoginController {
         alert.setContentText("Your username and/or password is incorrect!");
         alert.showAndWait();
     }
+
+    /**
+     * Initializes overview screen if login was successful
+     * @param email - users email
+     * @param admin - users admin status
+     */
     public void initMainScreen(String email, int admin){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Overview.fxml"));

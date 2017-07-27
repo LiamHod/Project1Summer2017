@@ -157,11 +157,18 @@ public class AddTagController {
         populateTagTable();
     }
 
+    /**
+     * Initalizes the values used for the controller
+     * @param selFile - the selected file
+     */
     public void initValue(DocFile selFile){
         this.docId = selFile.getDocid();
         fileLabel.setText(selFile.getDocname()+ "'s");
     }
 
+    /**
+     * Populated the tag tables when the page loads
+     */
     public void populateTagTable(){
         tagTableView.getItems().clear();
         String newQuery = "SELECT doctag.idtag,tagname FROM tag,doctag WHERE iddocument = ? AND tag.idtag = doctag.idtag;";
@@ -192,6 +199,10 @@ public class AddTagController {
         tagsLeft(false);
     }
 
+    /**
+     * Checks the inputs to see if they are valid
+     * @return - return a boolean value based on if the input are valid
+     */
     private Boolean checkInput(){
         if (tagTextBox.getText() == null || tagTextBox.getText().length() == 0){
             Alert tagAlert = new Alert(Alert.AlertType.WARNING);
@@ -205,6 +216,11 @@ public class AddTagController {
         }
     }
 
+    /**
+     * Calculates how many tags are left for the selected file
+     * @param alert - boolean value to that signals if you want the alert to show or not
+     * @return - boolean value if there are tags left or not
+     */
     private Boolean tagsLeft(boolean alert){
         String checkTagQuery = "SELECT count(*) FROM doctag WHERE iddocument = ?;";
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
