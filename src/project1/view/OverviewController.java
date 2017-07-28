@@ -470,7 +470,7 @@ public class OverviewController{
     private void deleteFile(){
         Alert deleteAlert = new Alert(Alert.AlertType.CONFIRMATION);
         deleteAlert.setTitle("Delete This File?");
-        deleteAlert.setHeaderText("You are about to delete this file");
+        deleteAlert.setHeaderText("You are about to delete " + selFile.getDocname());
         deleteAlert.setContentText("Are you sure you want to delete this file?");
         String deleteQuery = "DELETE FROM document WHERE iddocument NOT IN (SELECT iddocument FROM instrcourdoc);";
         String deleteInterQuery = "DELETE FROM instrcourdoc WHERE iddocument = ? AND idinstructor = ? AND idcourse = ? ;";
