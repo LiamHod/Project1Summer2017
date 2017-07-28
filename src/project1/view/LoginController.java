@@ -74,8 +74,8 @@ public class LoginController {
 
     @FXML
     private void initialize(){
-        emailbox.setText("test@gmail.com");
-        passwordbox.setText("password");
+        //emailbox.setText("test@gmail.com");
+        //passwordbox.setText("password");
         login.disableProperty().bind(
                 Bindings.isEmpty(emailbox.textProperty())
                         .or(Bindings.isEmpty(passwordbox.textProperty()))
