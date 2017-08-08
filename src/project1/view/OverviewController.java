@@ -17,6 +17,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -25,16 +27,20 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import project1.MainApp;
 import project1.model.Courses;
 import project1.model.DBCreds;
 import project1.model.DocFile;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
+import java.util.List;
 
 public class OverviewController{
 
@@ -101,6 +107,7 @@ public class OverviewController{
         ContextMenu rightClickMenu = fileContextMenu();
         ContextMenu addFileMenu = notfileContextMenu();
         ContextMenu previewMenu = previewContextMenu();
+        ContextMenu pdfMenu = pdfContextMenu();
         addFileButton.setOnAction(e -> openAddFile());
         searchFilesButton.setOnAction(e -> searchFiles());
 
@@ -111,9 +118,12 @@ public class OverviewController{
 
                 //If the click was the right click then a context menu is shown
                 if(event.getButton() == MouseButton.SECONDARY && (selFile = files.getSelectionModel().getSelectedItem()) != null){
-                    if (allowedTypes.contains(selFile.getFiletype())){
+                    if (allowedTypes.contains(selFile.getFiletype())) {
                         files.getSelectionModel().clearSelection();
                         files.setContextMenu(previewMenu);
+                    }else if (selFile.getFiletype().equals("pdf")){
+                        files.getSelectionModel().clearSelection();
+                        files.setContextMenu(pdfMenu);
                     }else {
                         files.getSelectionModel().clearSelection();
                         files.setContextMenu(rightClickMenu);
@@ -219,6 +229,27 @@ public class OverviewController{
         return rightClickMenu;
     }
 
+    private ContextMenu pdfContextMenu(){
+        ContextMenu rightClickMenu = new ContextMenu();
+        MenuItem previewMenu = new MenuItem("Preview...");
+        MenuItem renameMenu = new MenuItem("Rename...");
+        MenuItem downloadMenu = new MenuItem("Download...");
+        MenuItem copytoMenu = new MenuItem("Copy to...");
+        MenuItem addtagMenu = new MenuItem("Add/Remove Tag...");
+        MenuItem shareMenu = new MenuItem("Share...");
+        MenuItem deleteMenu = new MenuItem("Delete File");
+        rightClickMenu.getItems().addAll(previewMenu,renameMenu,downloadMenu,copytoMenu,addtagMenu,shareMenu,deleteMenu);
+        rightClickMenu.setAutoHide(true);
+        previewMenu.setOnAction(e -> pdfPreview());
+        renameMenu.setOnAction(e -> renameFile());
+        downloadMenu.setOnAction(e -> downloadFile());
+        copytoMenu.setOnAction(e -> copyFile());
+        shareMenu.setOnAction(e -> shareFile());
+        addtagMenu.setOnAction(e -> addTag());
+        deleteMenu.setOnAction(e -> deleteFile());
+        return rightClickMenu;
+    }
+
     /**
      * Context menu if empty space is right clicked on
      * @return - the context menu
@@ -233,6 +264,51 @@ public class OverviewController{
         searchMenu.setOnAction(e -> searchFiles());
         return rightClickMenu;
     }
+
+    private void pdfPreview(){
+        try (Connection connection = DriverManager.getConnection(url, username, password)) {
+            String prevQuery = "SELECT title,docfile FROM document WHERE iddocument = ?";
+            PreparedStatement ps = connection.prepareStatement(prevQuery);
+            ps.setInt(1, selFile.getDocid());
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            String filename = rs.getString(1);
+            Blob imageBlob = rs.getBlob(2);
+            String prefix = FilenameUtils.removeExtension(filename);
+            InputStream is = imageBlob.getBinaryStream();
+
+            File tempFile = File.createTempFile(prefix, ".pdf");
+            tempFile.deleteOnExit();
+            FileOutputStream out = new FileOutputStream(tempFile);
+            IOUtils.copy(is, out);
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().open(tempFile);
+                } catch (IOException ex) {
+                    Alert pdfAlert = new Alert(Alert.AlertType.ERROR);
+                    pdfAlert.setTitle("No pdf program");
+                    pdfAlert.setHeaderText(null);
+                    pdfAlert.setContentText("There are not programs present on this computer that can open the current file");
+                    pdfAlert.showAndWait();
+                }
+            }
+        } catch (IOException e) {
+            System.out.print("IOException");
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error previewing image");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't preview the image, check your connection and please try again");
+            sqlAlert.showAndWait();
+        } catch (SQLException e) {
+            Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
+            sqlAlert.setTitle("Error previewing image");
+            sqlAlert.setHeaderText(null);
+            sqlAlert.setContentText("The program encountered an error and couldn't preview the image, check your connection and please try again");
+            sqlAlert.showAndWait();
+            throw new IllegalStateException("Cannot connect the database!", e);
+        }
+    }
+
 
     /**
      * Loads a file preview
