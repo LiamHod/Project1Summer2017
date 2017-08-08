@@ -52,7 +52,6 @@ public class ShareFileController {
     @FXML
     void handleOk(ActionEvent event) {
         if (checkInput()) {
-            System.out.println("Valid email");
             try (Connection connection = DriverManager.getConnection(url, username, password)) {
                 String instrCourDocQuery = "INSERT INTO instrcourdoc (idinstructor,idcourse,iddocument) " + "VALUES (?,?,?)";
                 PreparedStatement psICD = connection.prepareStatement(instrCourDocQuery);

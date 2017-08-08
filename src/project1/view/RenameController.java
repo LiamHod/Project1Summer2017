@@ -58,7 +58,6 @@ public class RenameController {
                 PreparedStatement ps = connection.prepareStatement(newQuery,Statement.RETURN_GENERATED_KEYS);
                 ps.setString(1, newFileName);
                 ps.setInt(2,docId);
-                System.out.println("newFileName: "+newFileName+ "  oldFileName: "+ docName);
                 ps.executeUpdate();
                 ResultSet keys = ps.getGeneratedKeys();
                 keys.next();
@@ -132,7 +131,6 @@ public class RenameController {
             }else if(ext == null){
                 filename = fileNameWithOutExt + " - Copy";
             }else{
-                System.out.println(fileNameWithOutExt + " - Copy" + "." + ext);
                 filename = fileNameWithOutExt + " - Copy" + "." + ext;
             }
         }

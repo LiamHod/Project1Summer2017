@@ -111,12 +111,10 @@ public class OverviewController{
 
                 //If the click was the right click then a context menu is shown
                 if(event.getButton() == MouseButton.SECONDARY && (selFile = files.getSelectionModel().getSelectedItem()) != null){
-                    System.out.println(selFile.getFiletype());
                     if (allowedTypes.contains(selFile.getFiletype())){
                         files.getSelectionModel().clearSelection();
                         files.setContextMenu(previewMenu);
                     }else {
-                        System.out.println(selFile);
                         files.getSelectionModel().clearSelection();
                         files.setContextMenu(rightClickMenu);
                     }
@@ -582,11 +580,9 @@ public class OverviewController{
         classes.getSelectionModel().selectedItemProperty().addListener( (v, oldvalue, newvalue) -> {
             files.getItems().clear();
             if (newvalue == null){
-                System.out.println(selCourse);
                 queryFiles(oldvalue.getName());
             }else {
                 selCourse = classes.getSelectionModel().getSelectedItem();
-                System.out.println(selCourse);
                 queryFiles(newvalue.getName());
             }
             files.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
