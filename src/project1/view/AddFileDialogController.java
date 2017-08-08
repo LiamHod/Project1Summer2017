@@ -106,7 +106,6 @@ public class AddFileDialogController {
 
         //Makes sure the file exists
         if (file != null && file.exists()) {
-            System.out.println(file.length());
 
             //Makes sure the file is not over 10 MB
             if (file.length() > 10485760){
@@ -205,7 +204,6 @@ public class AddFileDialogController {
             if (result == 0){
                 foundName = false;
             }else{
-                System.out.println(fileNameWithOutExt + " - Copy" + "." + ext);
                 filename = fileNameWithOutExt + " - Copy" + "." + ext;
             }
         }

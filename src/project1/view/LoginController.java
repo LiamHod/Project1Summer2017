@@ -74,8 +74,8 @@ public class LoginController {
 
     @FXML
     private void initialize(){
-        emailbox.setText("test@gmail.com");
-        passwordbox.setText("password");
+        //emailbox.setText("test@gmail.com");
+        //passwordbox.setText("password");
         login.disableProperty().bind(
                 Bindings.isEmpty(emailbox.textProperty())
                         .or(Bindings.isEmpty(passwordbox.textProperty()))
@@ -106,7 +106,6 @@ public class LoginController {
         Properties props = new Properties();
         try {
             props.load(new FileInputStream("db.properties"));
-
             dbURL = props.getProperty("dburl");
             user = props.getProperty("user");
             dbpassword = props.getProperty("password");
@@ -138,9 +137,11 @@ public class LoginController {
 
                 } else {
                     loginFailed();
+                    passwordbox.clear();
                 }
             } else {
                 loginFailed();
+                passwordbox.clear();
             }
             preparedStatement.close();
             connection.close();

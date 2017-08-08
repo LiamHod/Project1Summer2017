@@ -192,7 +192,6 @@ public class CopyFileController {
             }else if(ext == null){
                 filename = fileNameWithOutExt + " - Copy";
             }else{
-                System.out.println(fileNameWithOutExt + " - Copy" + "." + ext);
                 filename = fileNameWithOutExt + " - Copy" + "." + ext;
             }
         }

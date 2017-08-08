@@ -168,7 +168,6 @@ public class AdminController {
             } catch (SQLException e) {
                 int errorCode = e.getErrorCode();
                 if (errorCode == 1062) {
-                    System.out.println(errorCode);
                     Alert alreadyAlert = new Alert(Alert.AlertType.ERROR);
                     alreadyAlert.setTitle("This course already exists");
                     alreadyAlert.setHeaderText(null);
