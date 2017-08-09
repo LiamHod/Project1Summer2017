@@ -291,19 +291,25 @@ public class OverviewController{
                     pdfAlert.setContentText("There are not programs present on this computer that can open the current file");
                     pdfAlert.showAndWait();
                 }
+            }else{
+                Alert pdfNotSupAlert = new Alert(Alert.AlertType.ERROR);
+                pdfNotSupAlert.setTitle("This action is not supported");
+                pdfNotSupAlert.setHeaderText(null);
+                pdfNotSupAlert.setContentText("This action is not supported on your device");
+                pdfNotSupAlert.showAndWait();
             }
         } catch (IOException e) {
             System.out.print("IOException");
             Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
-            sqlAlert.setTitle("Error previewing image");
+            sqlAlert.setTitle("Error previewing pdf");
             sqlAlert.setHeaderText(null);
-            sqlAlert.setContentText("The program encountered an error and couldn't preview the image, check your connection and please try again");
+            sqlAlert.setContentText("The program encountered an error and couldn't preview the pdf, check your connection and please try again");
             sqlAlert.showAndWait();
         } catch (SQLException e) {
             Alert sqlAlert = new Alert(Alert.AlertType.ERROR);
-            sqlAlert.setTitle("Error previewing image");
+            sqlAlert.setTitle("Error previewing pdf");
             sqlAlert.setHeaderText(null);
-            sqlAlert.setContentText("The program encountered an error and couldn't preview the image, check your connection and please try again");
+            sqlAlert.setContentText("The program encountered an error and couldn't preview the pdf, check your connection and please try again");
             sqlAlert.showAndWait();
             throw new IllegalStateException("Cannot connect the database!", e);
         }
