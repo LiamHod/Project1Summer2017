@@ -265,6 +265,9 @@ public class OverviewController{
         return rightClickMenu;
     }
 
+    /**
+     * Runs default pdf program
+     */
     private void pdfPreview(){
         try (Connection connection = DriverManager.getConnection(url, username, password)) {
             String prevQuery = "SELECT title,docfile FROM document WHERE iddocument = ?";
