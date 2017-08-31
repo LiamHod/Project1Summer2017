@@ -18,6 +18,11 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        System.out.println(System.getProperty("user.dir"));
+        System.setProperty("javax.net.ssl.keyStore",System.getProperty("user.dir")+"/keystore");
+        System.setProperty("javax.net.ssl.keyStorePassword","thisismykeystore");
+        System.setProperty("javax.net.ssl.trustStore",System.getProperty("user.dir")+"/truststore");
+        System.setProperty("javax.net.ssl.trustStorePassword","thisismykeystore");
         this.mainGui = primaryStage;
         primaryStage.setTitle("Login");
         initlayout();
